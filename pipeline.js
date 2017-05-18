@@ -18,8 +18,6 @@ var jobManagerIsStarted = false;
 * Create the string containing the parameters of the user (quantity and detergent)
 */
 var detergentDumper = function (list) {
-    console.log('list')
-    console.log(list);
     var string = '';
     for (var i in list) {
         // console.log(i);
@@ -34,7 +32,7 @@ var detergentDumper = function (list) {
 * Initialize the job manager
 */
 var initBackend = function(bean) {
-    console.log("Initializing Job Manager");
+    //console.log("Initializing Job Manager");
     jobManager.start(bean.managerSettings);
     dictJobManager = bean;
     //console.dir(dictJobManager);
@@ -127,6 +125,37 @@ var configJob = function (mode, cluster, exportVar, modules, coreScript, idTask)
 
 
 /*
+*
+*/
+var configJobCorona = function (cacheDir, requestPPM) {
+    var idTask = tagTask + 'Task_' + uuid.v4();
+    var exportVar = {}, modules = [], coreScript;
+
+    if (requestPPM) { // with PPM
+        exportVar['ppmResidueLib'] = dictJobManager.scriptVariables.BIN_DIR + '/res.lib';
+        modules.push('ppm');
+        coreScript = dictJobManager.scriptVariables.BIN_DIR + '/withPPM.sh';
+    } else { // without PPM
+        coreScript = dictJobManager.scriptVariables.BIN_DIR + '/withoutPPM.sh';
+    }
+
+    exportVar['pdbFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.pdb';
+    exportVar['detergentFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.detergent';
+    exportVar['orientForDisplay'] = dictJobManager.scriptVariables.BIN_DIR + '/rotateDirty.pl';
+    exportVar['detergentVolumes'] = dictJobManager.scriptVariables.BIN_DIR + '/detergentVolumes.txt';
+    exportVar['calculateVolTot'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateVolTot.py';
+    exportVar['calculateRadius'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateRadius.R';
+    modules.push('naccess');
+    modules.push('R');
+
+    var jobOpt = configJob('cpu', 'arwen-dev', exportVar, modules, coreScript, idTask);
+    //console.log(jobOpt);
+    return jobOpt;
+}
+
+
+
+/*
 * Coronna project computation
 * @data [JSON] = contains :
 *    - pdbFile [string] = PDB file of the user
@@ -137,51 +166,22 @@ var configJob = function (mode, cluster, exportVar, modules, coreScript, idTask)
 var corona = function (data) {
     var emitter = new events.EventEmitter();
     var cacheDir = jobManager.cacheDir();
-    var idTask = tagTask + 'Task_' + uuid.v4();
     var deterData;
-    
-    if (typeof data.deterData === 'object') {
-        console.log('object');
-        console.dir(data.deterData)
-        deterData = detergentDumper(deterData);
-    } else {
-        console.log('else');
-        deterData = data.deterData;
-    }
-    console.log('>>>' + deterData + '<<<');
-    console.log(typeof data.deterData)
 
-    if (data.requestPPM) { // with PPM
-        var exportVar = { 'ppmResidueLib' : dictJobManager.scriptVariables.BIN_DIR + '/res.lib' };
-        var modules = ['ppm'];
-        var coreScript = dictJobManager.scriptVariables.BIN_DIR + '/withPPM.sh';
-    } else { // without PPM
-        var exportVar = {};
-        var modules = [];
-        var coreScript = dictJobManager.scriptVariables.BIN_DIR + '/withoutPPM.sh';
-    }
-
-    exportVar['pdbFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.pdb';
-    exportVar['detergentFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.detergent';
-    exportVar['orientForDisplay'] = dictJobManager.scriptVariables.BIN_DIR + '/rotateDirty.pl';
-    exportVar['detergentVolumes'] = dictJobManager.scriptVariables.BIN_DIR + '/detergentVolumes.txt';
-    exportVar['calculateVolTot'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateVolTot.py';
-    exportVar['calculateRadius'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateRadius.R';
-
-    modules.push('naccess');
-    modules.push('R');
-    var jobOpt = configJob('cpu', 'arwen-dev', exportVar, modules, coreScript, idTask);
-    console.log(jobOpt);
+    // configure the job
+    var jobOpt = configJobCorona(cacheDir, data.requestPPM);
 
     // write the pdbFile and the detergent file in the cacheDir
+    if (typeof data.deterData === 'object') { deterData = detergentDumper(deterData); }
+    else { deterData = data.deterData; }
     try {
         fs.mkdirSync(cacheDir + '/' + jobOpt.id + '_inputs/');
         fs.writeFileSync(jobOpt.exportVar.pdbFile, data.fileContent);
         fs.writeFileSync(jobOpt.exportVar.detergentFile, deterData);
     } catch (err) { throw err; }
 
-    var jsonRes;
-    var j = jobManager.push(jobOpt); // creation of a job and setUp (creation of its sbatch file & submition)
+    // run
+    var j = jobManager.push(jobOpt);
     j.on('completed', function (stdout, stderr, jobObject){
         if (stderr) {
             stderr.on('data', function (buf){
@@ -190,11 +190,12 @@ var corona = function (data) {
             });
         }
         var results = '';
-        stdout.on('data', function (buf){
+        stdout
+        .on('data', function (buf){
             results += buf.toString();
-        });
-        stdout.on('end', function (){
-            jsonRes = JSON.parse(results);
+        })
+        .on('end', function (){
+            var jsonRes = JSON.parse(results);
             jsonRes = readResults(jsonRes.resultsPath);
             console.log('jobCompletion');
             emitter.emit('jobCompletion', jsonRes, jobObject);

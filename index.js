@@ -25,7 +25,7 @@ var jsonfile = require('jsonfile');
 
 
 var worker;
-var bean;
+var bean, pdbFile, deterFile;
 var port = 3001;
 var bFront = false, bBack = false, bPPM = false;
 

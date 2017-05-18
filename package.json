@@ -13,6 +13,8 @@
     "gulp": "^3.9.1",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.8",
+    "jsonfile": "^3.0.0",
+    "nslurmardocklegacy": "^1.1.1",
     "socket.io": "^2.0.1",
     "socket.io-client": "^2.0.1",
     "vinyl-buffer": "^1.0.0",
