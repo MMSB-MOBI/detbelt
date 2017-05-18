@@ -1,0 +1,6 @@
+node_modules/
+web/js/ngl-master/*
+!web/js/ngl-master/dist
+web/js/ngl-master/dist/*
+!web/js/ngl-master/dist/ngl.js
+

@@ -1,0 +1,38 @@
+{
+  "name": "corona",
+  "version": "1.0.0",
+  "description": "client du serveur corona ",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "browserify": "^14.3.0",
+    "browserify-css": "^0.10.0",
+    "express": "4.15.2",
+    "font-awesome": "^4.7.0",
+    "fs": "0.0.1-security",
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-util": "^3.0.8",
+    "socket.io": "^2.0.1",
+    "socket.io-client": "^2.0.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.9.0"
+  },
+  "devDependencies": {
+    "browserify": "^14.3.0",
+    "browserify-css": "^0.10.0",
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.1.2",
+    "gulp-util": "^3.0.8",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.9.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yannick Gestin",
+  "license": "ISC"
+}

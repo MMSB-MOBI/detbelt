@@ -1,0 +1,74 @@
+div.pdbSubmitDiv{
+	background-color: rgba(160, 160, 147, 0.38);
+	padding: 1em;
+	margin-top:1em;
+}
+
+div.ngl_canva.display{
+	height: 400px;
+}
+
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 768px) {
+  .container {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .container {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .container {
+    width: 1170px;
+  }
+}
+
+div.pdbSubmitDiv span.loader {
+	position: absolute;
+    top: 40%;
+    left: 20%;
+    font-size: 2em;
+}
+
+div.pdbSubmitDiv span.editableResults {
+	padding: 0.2em;
+    background-color: white;
+}
+
+div.pdbSubmitDiv span.notEditableResults {
+	padding: 0.2em;
+    background-color: white;
+}
+
+div.pdbSubmitDiv div.ctrlBox {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+}
+
+div.pdbSubmitDiv div.ctrlBox label {
+	font-weight: bold;
+}
+
+div.pdbSubmitDiv div.resultSummary {
+    width: 75%;
+    border-radius: 4px 4px 4px 4px;
+    background: darkgrey;
+    margin-top: 1.5em;
+    margin-left: 12.5%;
+}
+
+div.pdbSubmitDiv div.resultSummary table thead th {
+    text-align: center;
+}
+div.pdbSubmitDiv div.resultSummary table tbody td {
+    padding-left: 5em;
+}

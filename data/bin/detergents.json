@@ -1,0 +1,13 @@
+{ 
+	"title" : "Detergetent data", 
+	"date" : "last modificiation date", 
+	"author" : "Y.Gestin",
+	"data" : [
+		{ "name" : "DDM", "vol" : 453},
+		{ "name" : "FC12", "vol" : 344},
+		{ "name" : "OG", "vol" : 267.5},
+		{ "name" : "LMNG", "vol" : 885.7},
+		{ "name" : "Cholate", "vol" : 367.5}
+	]
+}
+
