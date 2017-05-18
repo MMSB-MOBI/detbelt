@@ -94,20 +94,25 @@ dBox.prototype.drawButtonRequest = function(){
          // Disable submission
         $(this).addClass('disabled');
         $(this).off("click");
-        
-        self.emiter.emit("submit", {"fileContent" : self.pdbFile, "requestPPM" : self.requestPPM , "deterData" : JSON.stringify(self.detList)});
+        self.emiter.emit("submit", {"fileContent" : self.pdbFile, "requestPPM" : self.requestPPM , "deterData" : self.detList});
     });
 }
 
 dBox.prototype.dataTransfert = function(data){
     var self = this;
     var pdbText = data.fileContent;
-    var data = data.data;
+    var coronaData = data.data;
+    var detList = data.inputs.deterData;
+    console.log(coronaData);
+    console.log(detList);
+    //console.dir(deterData);
+    //var detList = JSON.parse(deterData);
     self.modeEdition = true;
-    self.emiter.emit("result", pdbText, data);
+    self.emiter.emit("result", pdbText, coronaData, detList);
     $(self.getNode()).find(".buttonRequest").remove();
     $(self.getNode()).find('.ppmCheckBoxDiv').remove();
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-success btn-sm buttonEdition">Recompute the belt</button>');
+    $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-warning btn-sm buttonRefresh">Try an other protein</button>');
     $(self.getNode()).find(".buttonEdition").click(function(){
         if ( $(self.getNode()).find('select').length == 0 ) {
             console.log("pas de detergent");
@@ -117,6 +122,9 @@ dBox.prototype.dataTransfert = function(data){
         if (!validQt) return false;
         console.log(self.detList);
         self.emiter.emit("edition", self.detList, self.deterAndVolumeList);
+    });
+    $(self.getNode()).find(".buttonRefresh").click(function(){
+        window.location.reload();
     });
 } 
 
@@ -129,7 +137,7 @@ dBox.prototype.display = function(pdbFile) {
     this.boxNumber = 0;
     this.availableDet = [];
     this.detergentRefList = [];
-    $.getJSON("mesAssets/detergents.json", function (jsonData) {
+    $.getJSON("assets/detergents.json", function (jsonData) {
         self.deterAndVolumeList = jsonData.data;
         self.detergentRefList = self.deterAndVolumeList.map(function(e){ return e.name; });
         self.availableDet = self.detergentRefList.slice();

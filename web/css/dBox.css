@@ -57,3 +57,7 @@ div.DeterSubmitDiv div.ppmCheckBoxDiv {
 	margin-top: 0.8em;
     margin-bottom: -1.1em;
 }
+
+div.DeterSubmitDiv button.buttonRefresh{
+	margin-left: 1em;
+}

@@ -29,7 +29,6 @@ pdbSubmit.prototype.drawControlBox = function () {
 };
 
 pdbSubmit.prototype.drawResultBox = function () {
-    console.log("Daw results Box");
     var self = this;
 
     $(self.getNode()).find(".pdbSubmitDiv").append('<div class="resultSummary"></div>');
@@ -66,6 +65,7 @@ pdbSubmit.prototype.setWait = function(status){
             + '<span>Computation under way...</span>');
         $(this.getNode()).find("div.ngl_canva").css("visibility", "hidden");
         var previousProteinComponent = this.stage.compList[0];
+        console.log(previousProteinComponent);
         this.stage.removeComponent(previousProteinComponent);
     }
     else if(status === "loadOFF") {
@@ -98,6 +98,7 @@ pdbSubmit.prototype.display = function() {
 
         fileInput.addEventListener('change', function() {
             var reader = new FileReader();      
+            //var re = /^REMARK +1\/2 of bilayer thickness/;
 
             reader.addEventListener('load', function() {
                 var taille=fileInput.files[0].size;
@@ -107,6 +108,10 @@ pdbSubmit.prototype.display = function() {
                     alert("empty file");
                     reader.abort();
                 }
+                /*else if (! re.test(reader.result)) {
+                    alert("Corona need a pdb file");
+                    console.log("le fichier pdb doit commencer par une ligne REMARK 1/2 of bilayer thickness")
+                }*/
                 else{
                     var resultFichier=reader.result;
                     //console.log(resultFichier);
@@ -137,6 +142,60 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
     $("#w_"+this.idNum).removeClass(uneClass);
 }
 
+pdbSubmit.prototype.chooseColor = function(detList) {
+    
+    var r = 0,
+        g = 0,
+        b = 0;
+
+    detList.forEach(function(e){
+        
+        console.log("foreach");
+        console.log(e);
+        console.log(e.detName);
+        switch(e.detName){
+            case "DDM" :
+                g += 1;
+                //this.colorBelt = [0,1,0]
+                break;
+            case "FC12" :
+                r += 0.25;
+                g += 1;
+                b += 0.75;
+                //this.colorBelt = [0.25,1,0.75]
+                break;
+            case "LMNG":
+                r += 1;
+                g += 0.6;
+                b += 0.6;
+                //this.colorBelt = [1,0.6,0.6]
+                break;
+            case "OG":
+                r += 1;
+                g += 1;
+                //this.colorBelt = [1,1,0]
+                break;
+            case "CHOLATE":
+                r += 255;
+                g += 1;
+                b += 255;
+                //this.colorBelt = [255,1,255]
+                break;
+            default:
+                r += 1;
+                g += 1;
+                b += 1;
+                //this.colorBelt = [1,1,1]
+        }
+    });
+    
+    if (r > 255) { r = 255 }
+    if (g > 255) { g = 255 }
+    if (b > 255) { b = 255 }
+    this.colorBelt = [r,g,b];
+    console.log(this.colorBelt);
+}
+
 pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
     var self = this;
     console.log("lancement de ngl");
@@ -158,25 +217,27 @@ pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
     });
 }
 
-pdbSubmit.prototype.nglCorona = function(belt_radius) {
+pdbSubmit.prototype.nglCorona = function(belt_radius, detList) {
     //detruire premiere couronne
     console.log("lance nglCorona -> edition de la couronne");
+    this.chooseColor(detList);
     console.log(this.stage.compList);
     var comp = this.stage.compList[1];
     this.stage.removeComponent(comp);
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
-    shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], [1, 1, 0], belt_radius);
+    shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], this.colorBelt, belt_radius);
     console.log(belt_radius);
     var shapeComp = this.stage.addComponentFromObject( shape );
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
     this.nglStructureView_belt.autoView();
 }
 
-pdbSubmit.prototype.nglRefresh = function(pdbText,data) {
+pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     var self = this;
     this.pdbText = pdbText;
     this.data = data;
     var blob = new Blob([pdbText],{ type:'text/plain' });
+    this.chooseColor(detList);
     
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
@@ -189,7 +250,7 @@ pdbSubmit.prototype.nglRefresh = function(pdbText,data) {
             self.nglStructureView_belt = o;
             var shape = new NGL.Shape("shape", { disableImpostor: true } );
             var radius = parseFloat(self.data.radius);
-            shape.addCylinder([0, -1 * self.halfH, 0], [0, self.halfH, 0 ], [1, 1, 0], radius);
+            shape.addCylinder([0, -1 * self.halfH, 0], [0, self.halfH, 0 ], self.colorBelt, radius);
             //shape.addCylinder([0, 0, -1 * this.halfH], [0, 0, this.halfH ], [1, 1, 0], radius);
             var shapeComp = self.stage.addComponentFromObject( shape );
             shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
@@ -230,7 +291,7 @@ pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
     var belt_radius=Math.sqrt( volume / (pi * (this.halfH * 2)) + Math.pow(protein_radius,2) );
     $(this.volumeValueElem).html( sprintf("%2.1f", volume) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", belt_radius) + ' &#8491');
-    this.nglCorona(belt_radius);
+    this.nglCorona(belt_radius, detList);
 };
 
 
@@ -254,13 +315,7 @@ pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
             //geoComp.addRepresentation( "buffer" );
         } );
 */
-pdbSubmit.prototype.beltCompute = function(){
-    //deterTab = liste couple (detergent,nb) 
 
-    
-
-    //Vol c'est le volume total du cylindre, H c'est la hauteur (pas la demi-hauteur !), et protein_radius est le rayon de la protéine.
-};
 module.exports = {
     new : function (opt) {
         // opt safety assignment

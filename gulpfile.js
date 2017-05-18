@@ -27,7 +27,7 @@ const
         js: ["./app.js"]
     },
     dest = {
-        js: "./web"
+        js: "./js"
     },
     path = [ __dirname + '/web/css', __dirname + '/web/js'],
     transform = ['browserify-css']
@@ -74,8 +74,8 @@ gulp.task('compress', function() {
         .pipe(gulp.dest('./js/minified'));
 });
 
-gulp.task('server', function (cb) {
-    spawn('node', ['index.js'], { stdio: 'inherit' })
+gulp.task('front-end-emulate', function (cb) {
+    spawn('node', ['index.js', '--front', '--conf', 'data/template/coronaServer.conf'], { stdio: 'inherit' })
 
  /*
  exec('node index.js --conf ../default.conf --http', function (err, stdout, stderr) {
@@ -87,4 +87,5 @@ gulp.task('server', function (cb) {
 });
 
 gulp.task("compile", ["watch","js"]);
-gulp.task("default", ["watch", "js", "server"]);
+//gulp.task("default", []);
+gulp.task("front-end", ["watch", "js", "front-end-emulate"]);
