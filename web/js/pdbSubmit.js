@@ -65,7 +65,6 @@ pdbSubmit.prototype.setWait = function(status){
             + '<span>Computation under way...</span>');
         $(this.getNode()).find("div.ngl_canva").css("visibility", "hidden");
         var previousProteinComponent = this.stage.compList[0];
-        console.log(previousProteinComponent);
         this.stage.removeComponent(previousProteinComponent);
     }
     else if(status === "loadOFF") {
@@ -78,7 +77,6 @@ pdbSubmit.prototype.display = function() {
 
     var self = this;
     this.divTag = 'div_'+this.idNum;
-    console.log(this.divTag);
     $(this.getNode()).append('<div class="pdbSubmitDiv" id="'+this.divTag+'">'
             + '<h3>Enter your PDB file</h3>'
             + '<div class="ngl_canva" id="ngl_canva_'+self.idNum+'"> </div>'
@@ -87,7 +85,6 @@ pdbSubmit.prototype.display = function() {
     this.emiter.emit('display');
 
     var _drawButton = function (node) {
-        console.log("drawing button")
         var inputTag = 'file_' + self.idNum;
         
         $(node).append('<input id="' + inputTag + '" type="file" class="file" data-show-preview="false">'); 
@@ -142,58 +139,33 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
     $("#w_"+this.idNum).removeClass(uneClass);
 }
 
-pdbSubmit.prototype.chooseColor = function(detList) {
-    
+pdbSubmit.prototype.chooseColor = function(jsonFile, detList) {
+    var self = this;
     var r = 0,
         g = 0,
         b = 0;
-
-    detList.forEach(function(e){
-        
-        console.log("foreach");
-        console.log(e);
-        console.log(e.detName);
-        switch(e.detName){
-            case "DDM" :
-                g += 1;
-                //this.colorBelt = [0,1,0]
-                break;
-            case "FC12" :
-                r += 0.25;
-                g += 1;
-                b += 0.75;
-                //this.colorBelt = [0.25,1,0.75]
-                break;
-            case "LMNG":
-                r += 1;
-                g += 0.6;
-                b += 0.6;
-                //this.colorBelt = [1,0.6,0.6]
-                break;
-            case "OG":
-                r += 1;
-                g += 1;
-                //this.colorBelt = [1,1,0]
-                break;
-            case "CHOLATE":
-                r += 255;
-                g += 1;
-                b += 255;
-                //this.colorBelt = [255,1,255]
-                break;
-            default:
-                r += 1;
-                g += 1;
-                b += 1;
-                //this.colorBelt = [1,1,1]
-        }
-    });
+    this.colorBelt;
+    console.log("En avant les couleurs");
     
-    if (r > 255) { r = 255 }
-    if (g > 255) { g = 255 }
-    if (b > 255) { b = 255 }
-    this.colorBelt = [r,g,b];
-    console.log(this.colorBelt);
+    $.getJSON(jsonFile, function (jsonData) {
+        var data = jsonData.data;
+        detList.forEach(function(e){
+            data.forEach(function(f){
+                if(e.detName === f.name){
+                    r += f.color[0];
+                    g += f.color[1];
+                    b += f.color[2];
+                    if (r > 255) { r = 255 }
+                    if (g > 255) { g = 255 }
+                    if (b > 255) { b = 255 }
+                }
+            });
+            console.log("Les couleurs "+r+" "+g+" "+b);
+        });
+        self.colorBelt = [r,g,b];
+        console.log(self.colorBelt);
+        self.emiter.emit("color_ok");
+    });
 }
 
 pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
@@ -217,27 +189,24 @@ pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
     });
 }
 
-pdbSubmit.prototype.nglCorona = function(belt_radius, detList) {
+pdbSubmit.prototype.nglCorona = function(belt_radius) {
     //detruire premiere couronne
     console.log("lance nglCorona -> edition de la couronne");
-    this.chooseColor(detList);
-    console.log(this.stage.compList);
     var comp = this.stage.compList[1];
     this.stage.removeComponent(comp);
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
     shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], this.colorBelt, belt_radius);
-    console.log(belt_radius);
     var shapeComp = this.stage.addComponentFromObject( shape );
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
     this.nglStructureView_belt.autoView();
+    console.log("edition de la couronne");
 }
 
-pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
+pdbSubmit.prototype.nglRefresh = function(pdbText, data) {
     var self = this;
     this.pdbText = pdbText;
     this.data = data;
     var blob = new Blob([pdbText],{ type:'text/plain' });
-    this.chooseColor(detList);
     
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
@@ -259,7 +228,7 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
             //var shapeComp2 = self.stage.addComponentFromObject( shape2 );
             //shapeComp2.addRepresentation( "belt", { "opacity" : 1 } );
             self.nglStructureView_belt.autoView();
-
+            console.log("creation de la couronne");
             self.setWait("loadOFF");
             self.drawControlBox();
             self.drawResultBox();
@@ -270,13 +239,9 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
 };
 
 pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
-    //nglCorona(data);
-    //this.beltCompute(detList);
     var volume = 0;
     var pi = 3.1415;
     var protein_radius = parseFloat(this.data.proteinRadius);
-    console.log("detList :");
-    console.log(detList);
     detList.forEach(function(e){
         var name = e.detName;
         deterAndVolumeList.forEach(function(i){
@@ -291,7 +256,7 @@ pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
     var belt_radius=Math.sqrt( volume / (pi * (this.halfH * 2)) + Math.pow(protein_radius,2) );
     $(this.volumeValueElem).html( sprintf("%2.1f", volume) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", belt_radius) + ' &#8491');
-    this.nglCorona(belt_radius, detList);
+    this.nglCorona(belt_radius, jsonFile, detList);
 };
 
 

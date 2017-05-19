@@ -78,7 +78,7 @@ var httpStart = function (worker) {
             worker(data)
             .on('jobCompletion', function (jsonRes, jobObject) {
                 //console.log(jsonRes);
-                socket.emit('results', jsonRes);
+                    socket.emit('results', jsonRes);
             });;
         });
     });

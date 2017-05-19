@@ -10,7 +10,6 @@ dBox.prototype = Object.create(Core.prototype);
 dBox.prototype.constructor = dBox;
 
 dBox.prototype.toggleSubmissionButtonState = function (){
-    console.log("TOGGLING");
     var elems = $(this.getNode()).find('select');
     console.dir(elems);
 
@@ -18,7 +17,6 @@ dBox.prototype.toggleSubmissionButtonState = function (){
         $(this.getNode()).find('.buttonEdition,.buttonRequest').addClass('disabled');
     }
     else {
-        console.log("REMOVINS");
         $(this.getNode()).find('.buttonEdition,.buttonRequest').removeClass('disabled');
     }
 };
@@ -34,7 +32,6 @@ dBox.prototype.validationAndListDet = function(){
         if(qt===""){ 
             console.log("empty field"); 
             validateField = false;
-            console.log(this.id); 
             $(this).find(" .dNumber").addClass("error");              
         } else if (! re.test(qt)) {
             validateField = false;
@@ -90,11 +87,12 @@ dBox.prototype.drawButtonRequest = function(){
         if(document.getElementById(self.PPMBoxTag).checked){ self.requestPPM = false }
         else { self.requestPPM = true }
         $(self.getNode()).find("text").remove();
-        console.log("sending-->" + self.detList);
          // Disable submission
         $(this).addClass('disabled');
         $(this).off("click");
-        self.emiter.emit("submit", {"fileContent" : self.pdbFile, "requestPPM" : self.requestPPM , "deterData" : self.detList});
+        $(self.getNode()).find('.newDet').addClass('disabled');
+        //$(self.getNode()).find('.newDet').off("click");
+        self.emiter.emit("submit", self.requestPPM , self.detList);
     });
 }
 
@@ -102,17 +100,16 @@ dBox.prototype.dataTransfert = function(data){
     var self = this;
     var pdbText = data.fileContent;
     var coronaData = data.data;
-    var detList = data.inputs.deterData;
-    console.log(coronaData);
-    console.log(detList);
     //console.dir(deterData);
     //var detList = JSON.parse(deterData);
     self.modeEdition = true;
-    self.emiter.emit("result", pdbText, coronaData, detList);
+    self.emiter.emit("result", pdbText, coronaData);
     $(self.getNode()).find(".buttonRequest").remove();
     $(self.getNode()).find('.ppmCheckBoxDiv').remove();
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-success btn-sm buttonEdition">Recompute the belt</button>');
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-warning btn-sm buttonRefresh">Try an other protein</button>');
+    $(self.getNode()).find(".newDet").removeClass('disabled = true');
+    //$(self.getNode()).find(".newDet").on("click");
     $(self.getNode()).find(".buttonEdition").click(function(){
         if ( $(self.getNode()).find('select').length == 0 ) {
             console.log("pas de detergent");
@@ -120,7 +117,6 @@ dBox.prototype.dataTransfert = function(data){
         }
         var validQt = self.validationAndListDet();
         if (!validQt) return false;
-        console.log(self.detList);
         self.emiter.emit("edition", self.detList, self.deterAndVolumeList);
     });
     $(self.getNode()).find(".buttonRefresh").click(function(){
@@ -129,15 +125,14 @@ dBox.prototype.dataTransfert = function(data){
 } 
 
 
-dBox.prototype.display = function(pdbFile) {
+dBox.prototype.display = function(jsonFile) {
     // ~ Core.call(display)
     if (this.drawn) return;
     var self = this;
-    this.pdbFile = pdbFile;
     this.boxNumber = 0;
     this.availableDet = [];
     this.detergentRefList = [];
-    $.getJSON("assets/detergents.json", function (jsonData) {
+    $.getJSON(jsonFile, function (jsonData) {
         self.deterAndVolumeList = jsonData.data;
         self.detergentRefList = self.deterAndVolumeList.map(function(e){ return e.name; });
         self.availableDet = self.detergentRefList.slice();
@@ -154,8 +149,6 @@ dBox.prototype.addAvailable = function (detName) {
         if(e === detName) detExist = true; 
     });
     if(!detExist) this.availableDet.push(detName);
-
-    console.log("Brwosing select boxes for addition");
 
     $(this.getNode()).find('select.selDetName')
         .filter(function(){
@@ -226,8 +219,7 @@ dBox.prototype.drawDeterBox = function() {
         self.delAvailable(self.availableDet[0]);
         var prevDetSelected;
         $(elem).on('click',function(){
-            prevDetSelected = $(this).find('option:selected').text();
-            console.log("too old --> " + prevDetSelected);            
+            prevDetSelected = $(this).find('option:selected').text();         
         })
 
 

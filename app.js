@@ -12,6 +12,7 @@ var pdbSubmit = require('./web/js/pdbSubmit.js');
 var dBox = require('./web/js/dBox.js');
 require("./app.css");
 
+var jsonFile = SERVER_DOMAIN+"/assets/detergents.json";
 var socket = io.connect(SERVER_DOMAIN);
 socket.on('connect', function(){
     console.log("connecté");
@@ -33,41 +34,49 @@ var createFooter = function (elem){
 
 $(function(){
     self = this;
-    var cp1 = pdbSubmit.new({root : "#main", idNum : 1 });
-    var cp2 = dBox.new({root : "#main",idNum : 2}); 
+    var cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
+    var cpDetBox = dBox.new({root : "#main",idNum : 2}); 
     createHeader("body .page-header");
     createFooter("body footer");
 
     socket.on("results", function (data) {
         console.log("data result in app.js : ");
         console.dir(data);
-        cp2.dataTransfert(data);
+        cpDetBox.dataTransfert(data);
     });
 
-    cp1.display();
-    cp1.on("ngl_ok",function(fileContent){
-        cp1.removeClass("col-xs-12");
-        cp1.addClass("col-xs-8");
-        cp2.display(fileContent);
+    cpSubmitBox.display();
+    cpSubmitBox.on("ngl_ok",function(fileContent){
+        self.pdbFile = fileContent;
+        cpSubmitBox.removeClass("col-xs-12");
+        cpSubmitBox.addClass("col-xs-8");
+        cpDetBox.display(jsonFile);
     });
 
-    cp1.on("display",function(){
-        cp1.addClass("col-xs-12");
+    cpSubmitBox.on("display",function(){
+        cpSubmitBox.addClass("col-xs-12");
     })
 
-    cp2.on("display",function(){
-        cp2.addClass("col-xs-4");
+    cpDetBox.on("display",function(){
+        cpDetBox.addClass("col-xs-4");
     })
-    cp2.on("submit", function(data){
-        cp1.setWait("loadON");
+    cpDetBox.on("submit", function(requestPPM, detList){
+        var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
+        cpSubmitBox.setWait("loadON");
+        cpSubmitBox.chooseColor(jsonFile,data.deterData);
         socket.emit("submission", data);
     });
 
-    cp2.on("result",function(pdbText, data, detList){
-        cp1.nglRefresh(pdbText, data, detList);
+    cpDetBox.on("result",function(pdbText, data, detList){
+        cpSubmitBox.nglRefresh(pdbText, data, detList, jsonFile);
     });
 
-    cp2.on("edition",function(detList,deterAndVolumeList){
-        cp1.nglEditionBelt(detList,deterAndVolumeList);
+    cpDetBox.on("edition",function(detList, deterAndVolumeList){
+        console.log("go edition");
+        cpSubmitBox.chooseColor(jsonFile,detList);
+        cpSubmitBox.on("color_ok",function(){
+            cpSubmitBox.nglEditionBelt(detList, deterAndVolumeList, jsonFile);
+        });
     });
+    
 });

@@ -15,6 +15,7 @@ var pdbSubmit = require('./web/js/pdbSubmit.js');
 var dBox = require('./web/js/dBox.js');
 require("./app.css");
 
+var jsonFile = SERVER_DOMAIN+"/assets/detergents.json";
 var socket = io.connect(SERVER_DOMAIN);
 socket.on('connect', function(){
     console.log("connecté");
@@ -36,43 +37,51 @@ var createFooter = function (elem){
 
 $(function(){
     self = this;
-    var cp1 = pdbSubmit.new({root : "#main", idNum : 1 });
-    var cp2 = dBox.new({root : "#main",idNum : 2}); 
+    var cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
+    var cpDetBox = dBox.new({root : "#main",idNum : 2}); 
     createHeader("body .page-header");
     createFooter("body footer");
 
     socket.on("results", function (data) {
         console.log("data result in app.js : ");
         console.dir(data);
-        cp2.dataTransfert(data);
+        cpDetBox.dataTransfert(data);
     });
 
-    cp1.display();
-    cp1.on("ngl_ok",function(fileContent){
-        cp1.removeClass("col-xs-12");
-        cp1.addClass("col-xs-8");
-        cp2.display(fileContent);
+    cpSubmitBox.display();
+    cpSubmitBox.on("ngl_ok",function(fileContent){
+        self.pdbFile = fileContent;
+        cpSubmitBox.removeClass("col-xs-12");
+        cpSubmitBox.addClass("col-xs-8");
+        cpDetBox.display(jsonFile);
     });
 
-    cp1.on("display",function(){
-        cp1.addClass("col-xs-12");
+    cpSubmitBox.on("display",function(){
+        cpSubmitBox.addClass("col-xs-12");
     })
 
-    cp2.on("display",function(){
-        cp2.addClass("col-xs-4");
+    cpDetBox.on("display",function(){
+        cpDetBox.addClass("col-xs-4");
     })
-    cp2.on("submit", function(data){
-        cp1.setWait("loadON");
+    cpDetBox.on("submit", function(requestPPM, detList){
+        var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
+        cpSubmitBox.setWait("loadON");
+        cpSubmitBox.chooseColor(jsonFile,data.deterData);
         socket.emit("submission", data);
     });
 
-    cp2.on("result",function(pdbText, data, detList){
-        cp1.nglRefresh(pdbText, data, detList);
+    cpDetBox.on("result",function(pdbText, data, detList){
+        cpSubmitBox.nglRefresh(pdbText, data, detList, jsonFile);
     });
 
-    cp2.on("edition",function(detList,deterAndVolumeList){
-        cp1.nglEditionBelt(detList,deterAndVolumeList);
+    cpDetBox.on("edition",function(detList, deterAndVolumeList){
+        console.log("go edition");
+        cpSubmitBox.chooseColor(jsonFile,detList);
+        cpSubmitBox.on("color_ok",function(){
+            cpSubmitBox.nglEditionBelt(detList, deterAndVolumeList, jsonFile);
+        });
     });
+    
 });
 
 },{"./app.css":1,"./web/js/dBox.js":13,"./web/js/pdbSubmit.js":14,"backbone":3,"events":5,"jquery":6,"path":7,"socket.io-client/dist/socket.io.js":9}],3:[function(require,module,exports){
@@ -14944,7 +14953,6 @@ dBox.prototype = Object.create(Core.prototype);
 dBox.prototype.constructor = dBox;
 
 dBox.prototype.toggleSubmissionButtonState = function (){
-    console.log("TOGGLING");
     var elems = $(this.getNode()).find('select');
     console.dir(elems);
 
@@ -14952,7 +14960,6 @@ dBox.prototype.toggleSubmissionButtonState = function (){
         $(this.getNode()).find('.buttonEdition,.buttonRequest').addClass('disabled');
     }
     else {
-        console.log("REMOVINS");
         $(this.getNode()).find('.buttonEdition,.buttonRequest').removeClass('disabled');
     }
 };
@@ -14968,7 +14975,6 @@ dBox.prototype.validationAndListDet = function(){
         if(qt===""){ 
             console.log("empty field"); 
             validateField = false;
-            console.log(this.id); 
             $(this).find(" .dNumber").addClass("error");              
         } else if (! re.test(qt)) {
             validateField = false;
@@ -15024,11 +15030,12 @@ dBox.prototype.drawButtonRequest = function(){
         if(document.getElementById(self.PPMBoxTag).checked){ self.requestPPM = false }
         else { self.requestPPM = true }
         $(self.getNode()).find("text").remove();
-        console.log("sending-->" + self.detList);
          // Disable submission
         $(this).addClass('disabled');
         $(this).off("click");
-        self.emiter.emit("submit", {"fileContent" : self.pdbFile, "requestPPM" : self.requestPPM , "deterData" : self.detList});
+        $(self.getNode()).find('.newDet').addClass('disabled');
+        //$(self.getNode()).find('.newDet').off("click");
+        self.emiter.emit("submit", self.requestPPM , self.detList);
     });
 }
 
@@ -15036,17 +15043,16 @@ dBox.prototype.dataTransfert = function(data){
     var self = this;
     var pdbText = data.fileContent;
     var coronaData = data.data;
-    var detList = data.inputs.deterData;
-    console.log(coronaData);
-    console.log(detList);
     //console.dir(deterData);
     //var detList = JSON.parse(deterData);
     self.modeEdition = true;
-    self.emiter.emit("result", pdbText, coronaData, detList);
+    self.emiter.emit("result", pdbText, coronaData);
     $(self.getNode()).find(".buttonRequest").remove();
     $(self.getNode()).find('.ppmCheckBoxDiv').remove();
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-success btn-sm buttonEdition">Recompute the belt</button>');
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-warning btn-sm buttonRefresh">Try an other protein</button>');
+    $(self.getNode()).find(".newDet").removeClass('disabled = true');
+    //$(self.getNode()).find(".newDet").on("click");
     $(self.getNode()).find(".buttonEdition").click(function(){
         if ( $(self.getNode()).find('select').length == 0 ) {
             console.log("pas de detergent");
@@ -15054,7 +15060,6 @@ dBox.prototype.dataTransfert = function(data){
         }
         var validQt = self.validationAndListDet();
         if (!validQt) return false;
-        console.log(self.detList);
         self.emiter.emit("edition", self.detList, self.deterAndVolumeList);
     });
     $(self.getNode()).find(".buttonRefresh").click(function(){
@@ -15063,15 +15068,14 @@ dBox.prototype.dataTransfert = function(data){
 } 
 
 
-dBox.prototype.display = function(pdbFile) {
+dBox.prototype.display = function(jsonFile) {
     // ~ Core.call(display)
     if (this.drawn) return;
     var self = this;
-    this.pdbFile = pdbFile;
     this.boxNumber = 0;
     this.availableDet = [];
     this.detergentRefList = [];
-    $.getJSON("assets/detergents.json", function (jsonData) {
+    $.getJSON(jsonFile, function (jsonData) {
         self.deterAndVolumeList = jsonData.data;
         self.detergentRefList = self.deterAndVolumeList.map(function(e){ return e.name; });
         self.availableDet = self.detergentRefList.slice();
@@ -15088,8 +15092,6 @@ dBox.prototype.addAvailable = function (detName) {
         if(e === detName) detExist = true; 
     });
     if(!detExist) this.availableDet.push(detName);
-
-    console.log("Brwosing select boxes for addition");
 
     $(this.getNode()).find('select.selDetName')
         .filter(function(){
@@ -15160,8 +15162,7 @@ dBox.prototype.drawDeterBox = function() {
         self.delAvailable(self.availableDet[0]);
         var prevDetSelected;
         $(elem).on('click',function(){
-            prevDetSelected = $(this).find('option:selected').text();
-            console.log("too old --> " + prevDetSelected);            
+            prevDetSelected = $(this).find('option:selected').text();         
         })
 
 
@@ -15261,7 +15262,6 @@ pdbSubmit.prototype.setWait = function(status){
             + '<span>Computation under way...</span>');
         $(this.getNode()).find("div.ngl_canva").css("visibility", "hidden");
         var previousProteinComponent = this.stage.compList[0];
-        console.log(previousProteinComponent);
         this.stage.removeComponent(previousProteinComponent);
     }
     else if(status === "loadOFF") {
@@ -15274,7 +15274,6 @@ pdbSubmit.prototype.display = function() {
 
     var self = this;
     this.divTag = 'div_'+this.idNum;
-    console.log(this.divTag);
     $(this.getNode()).append('<div class="pdbSubmitDiv" id="'+this.divTag+'">'
             + '<h3>Enter your PDB file</h3>'
             + '<div class="ngl_canva" id="ngl_canva_'+self.idNum+'"> </div>'
@@ -15283,7 +15282,6 @@ pdbSubmit.prototype.display = function() {
     this.emiter.emit('display');
 
     var _drawButton = function (node) {
-        console.log("drawing button")
         var inputTag = 'file_' + self.idNum;
         
         $(node).append('<input id="' + inputTag + '" type="file" class="file" data-show-preview="false">'); 
@@ -15338,58 +15336,33 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
     $("#w_"+this.idNum).removeClass(uneClass);
 }
 
-pdbSubmit.prototype.chooseColor = function(detList) {
-    
+pdbSubmit.prototype.chooseColor = function(jsonFile, detList) {
+    var self = this;
     var r = 0,
         g = 0,
         b = 0;
-
-    detList.forEach(function(e){
-        
-        console.log("foreach");
-        console.log(e);
-        console.log(e.detName);
-        switch(e.detName){
-            case "DDM" :
-                g += 1;
-                //this.colorBelt = [0,1,0]
-                break;
-            case "FC12" :
-                r += 0.25;
-                g += 1;
-                b += 0.75;
-                //this.colorBelt = [0.25,1,0.75]
-                break;
-            case "LMNG":
-                r += 1;
-                g += 0.6;
-                b += 0.6;
-                //this.colorBelt = [1,0.6,0.6]
-                break;
-            case "OG":
-                r += 1;
-                g += 1;
-                //this.colorBelt = [1,1,0]
-                break;
-            case "CHOLATE":
-                r += 255;
-                g += 1;
-                b += 255;
-                //this.colorBelt = [255,1,255]
-                break;
-            default:
-                r += 1;
-                g += 1;
-                b += 1;
-                //this.colorBelt = [1,1,1]
-        }
-    });
+    this.colorBelt;
+    console.log("En avant les couleurs");
     
-    if (r > 255) { r = 255 }
-    if (g > 255) { g = 255 }
-    if (b > 255) { b = 255 }
-    this.colorBelt = [r,g,b];
-    console.log(this.colorBelt);
+    $.getJSON(jsonFile, function (jsonData) {
+        var data = jsonData.data;
+        detList.forEach(function(e){
+            data.forEach(function(f){
+                if(e.detName === f.name){
+                    r += f.color[0];
+                    g += f.color[1];
+                    b += f.color[2];
+                    if (r > 255) { r = 255 }
+                    if (g > 255) { g = 255 }
+                    if (b > 255) { b = 255 }
+                }
+            });
+            console.log("Les couleurs "+r+" "+g+" "+b);
+        });
+        self.colorBelt = [r,g,b];
+        console.log(self.colorBelt);
+        self.emiter.emit("color_ok");
+    });
 }
 
 pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
@@ -15413,27 +15386,24 @@ pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
     });
 }
 
-pdbSubmit.prototype.nglCorona = function(belt_radius, detList) {
+pdbSubmit.prototype.nglCorona = function(belt_radius) {
     //detruire premiere couronne
     console.log("lance nglCorona -> edition de la couronne");
-    this.chooseColor(detList);
-    console.log(this.stage.compList);
     var comp = this.stage.compList[1];
     this.stage.removeComponent(comp);
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
     shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], this.colorBelt, belt_radius);
-    console.log(belt_radius);
     var shapeComp = this.stage.addComponentFromObject( shape );
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
     this.nglStructureView_belt.autoView();
+    console.log("edition de la couronne");
 }
 
-pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
+pdbSubmit.prototype.nglRefresh = function(pdbText, data) {
     var self = this;
     this.pdbText = pdbText;
     this.data = data;
     var blob = new Blob([pdbText],{ type:'text/plain' });
-    this.chooseColor(detList);
     
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
@@ -15455,7 +15425,7 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
             //var shapeComp2 = self.stage.addComponentFromObject( shape2 );
             //shapeComp2.addRepresentation( "belt", { "opacity" : 1 } );
             self.nglStructureView_belt.autoView();
-
+            console.log("creation de la couronne");
             self.setWait("loadOFF");
             self.drawControlBox();
             self.drawResultBox();
@@ -15466,13 +15436,9 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
 };
 
 pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
-    //nglCorona(data);
-    //this.beltCompute(detList);
     var volume = 0;
     var pi = 3.1415;
     var protein_radius = parseFloat(this.data.proteinRadius);
-    console.log("detList :");
-    console.log(detList);
     detList.forEach(function(e){
         var name = e.detName;
         deterAndVolumeList.forEach(function(i){
@@ -15487,7 +15453,7 @@ pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
     var belt_radius=Math.sqrt( volume / (pi * (this.halfH * 2)) + Math.pow(protein_radius,2) );
     $(this.volumeValueElem).html( sprintf("%2.1f", volume) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", belt_radius) + ' &#8491');
-    this.nglCorona(belt_radius, detList);
+    this.nglCorona(belt_radius, jsonFile, detList);
 };
 
 
