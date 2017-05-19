@@ -230,8 +230,7 @@ var mimicCompute = function (data) {
             "halfH" : halfH,
             "volTot" : volTot,
             "proteinRadius" : proteinRadius
-        },
-        "inputs" : data
+        }
     };
     console.log("answering w/ " + results);
     setTimeout(function () {
