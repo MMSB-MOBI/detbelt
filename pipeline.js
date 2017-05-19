@@ -83,7 +83,7 @@ var readResults = function (resultsPath) {
 var configJob = function (mode, cluster, exportVar, modules, coreScript, idTask) {
     var jobOpt = {
         'id' : idTask,
-        'tWall' : '0-00:15',
+        'tWall' : '0-01:00',
         'script' : coreScript,
         'modules' : modules,
         'exportVar' : exportVar
@@ -125,7 +125,7 @@ var configJob = function (mode, cluster, exportVar, modules, coreScript, idTask)
 
 
 /*
-*
+* Configure a corona job using the configJob() method
 */
 var configJobCorona = function (cacheDir, requestPPM) {
     var idTask = tagTask + 'Task_' + uuid.v4();
