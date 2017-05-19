@@ -15195,6 +15195,7 @@ module.exports = {
     }
 }
 },{"./Core.js":12}],14:[function(require,module,exports){
+//pdbSubmit SubmitBox with canva
 var Core = require('./Core.js').Core;
 var sprintf = require("sprintf-js").sprintf,
     vsprintf = require("sprintf-js").vsprintf;
