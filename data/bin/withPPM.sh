@@ -22,6 +22,7 @@ ppmResultsFile="$WORKDIR/results"
 
 SOURCEDIR=`pwd`
 mkdir $SOURCEDIR/results/
+mkdir $SOURCEDIR/resultsPPM/
 cd $WORKDIR
 cp $pdbFile ./$pdbUser # save the PDB file in the workdir
 
