@@ -1,4 +1,4 @@
-var SERVER_DOMAIN = ('http://127.0.0.1:3001'); // 3001
+var SERVER_DOMAIN = ('http://corona-dev.ibcp.fr'); // 3001
 var CLIENT_VERSION=0.1;
 //description of the client
 
