@@ -45,7 +45,7 @@ $(function(){
         cpDetBox.dataTransfert(data);
     });
 
-    cpSubmitBox.display();
+    cpSubmitBox.display(jsonFile);
     cpSubmitBox.on("ngl_ok",function(fileContent){
         self.pdbFile = fileContent;
         cpSubmitBox.removeClass("col-xs-12");
@@ -63,20 +63,17 @@ $(function(){
     cpDetBox.on("submit", function(requestPPM, detList){
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
         cpSubmitBox.setWait("loadON");
-        cpSubmitBox.chooseColor(jsonFile,data.deterData);
+        cpSubmitBox.chooseColor(data.deterData);
         socket.emit("submission", data);
     });
 
-    cpDetBox.on("result",function(pdbText, data, detList){
-        cpSubmitBox.nglRefresh(pdbText, data, detList, jsonFile);
+    cpDetBox.on("result",function(pdbText, data){
+        cpSubmitBox.nglRefresh(pdbText, data);
     });
 
     cpDetBox.on("edition",function(detList, deterAndVolumeList){
         console.log("go edition");
-        cpSubmitBox.chooseColor(jsonFile,detList);
-        cpSubmitBox.on("color_ok",function(){
-            cpSubmitBox.nglEditionBelt(detList, deterAndVolumeList, jsonFile);
-        });
+        cpSubmitBox.editionColor(detList,deterAndVolumeList);
     });
     
 });

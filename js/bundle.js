@@ -48,7 +48,7 @@ $(function(){
         cpDetBox.dataTransfert(data);
     });
 
-    cpSubmitBox.display();
+    cpSubmitBox.display(jsonFile);
     cpSubmitBox.on("ngl_ok",function(fileContent){
         self.pdbFile = fileContent;
         cpSubmitBox.removeClass("col-xs-12");
@@ -66,20 +66,17 @@ $(function(){
     cpDetBox.on("submit", function(requestPPM, detList){
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
         cpSubmitBox.setWait("loadON");
-        cpSubmitBox.chooseColor(jsonFile,data.deterData);
+        cpSubmitBox.chooseColor(data.deterData);
         socket.emit("submission", data);
     });
 
-    cpDetBox.on("result",function(pdbText, data, detList){
-        cpSubmitBox.nglRefresh(pdbText, data, detList, jsonFile);
+    cpDetBox.on("result",function(pdbText, data){
+        cpSubmitBox.nglRefresh(pdbText, data);
     });
 
     cpDetBox.on("edition",function(detList, deterAndVolumeList){
         console.log("go edition");
-        cpSubmitBox.chooseColor(jsonFile,detList);
-        cpSubmitBox.on("color_ok",function(){
-            cpSubmitBox.nglEditionBelt(detList, deterAndVolumeList, jsonFile);
-        });
+        cpSubmitBox.editionColor(detList,deterAndVolumeList);
     });
     
 });
@@ -15195,6 +15192,7 @@ module.exports = {
     }
 }
 },{"./Core.js":12}],14:[function(require,module,exports){
+//pdbSubmit SubmitBox with canva
 var Core = require('./Core.js').Core;
 var sprintf = require("sprintf-js").sprintf,
     vsprintf = require("sprintf-js").vsprintf;
@@ -15270,7 +15268,7 @@ pdbSubmit.prototype.setWait = function(status){
     }
 };
 
-pdbSubmit.prototype.display = function() {
+pdbSubmit.prototype.display = function(jsonFile) {
 
     var self = this;
     this.divTag = 'div_'+this.idNum;
@@ -15280,6 +15278,10 @@ pdbSubmit.prototype.display = function() {
             + '<div id="insertFile"> </div>'
             + '</div>');
     this.emiter.emit('display');
+
+    $.getJSON(jsonFile, function (jsonData) {
+        self.dataJsonForColor = jsonData.data;
+    });
 
     var _drawButton = function (node) {
         var inputTag = 'file_' + self.idNum;
@@ -15325,7 +15327,6 @@ pdbSubmit.prototype.display = function() {
     };
 
     _drawButton($(this.getNode()).find(".pdbSubmitDiv")[0]);
-  
 }
 
 pdbSubmit.prototype.addClass = function(uneClass) {
@@ -15334,35 +15335,6 @@ pdbSubmit.prototype.addClass = function(uneClass) {
 
 pdbSubmit.prototype.removeClass = function(uneClass) {
     $("#w_"+this.idNum).removeClass(uneClass);
-}
-
-pdbSubmit.prototype.chooseColor = function(jsonFile, detList) {
-    var self = this;
-    var r = 0,
-        g = 0,
-        b = 0;
-    this.colorBelt;
-    console.log("En avant les couleurs");
-    
-    $.getJSON(jsonFile, function (jsonData) {
-        var data = jsonData.data;
-        detList.forEach(function(e){
-            data.forEach(function(f){
-                if(e.detName === f.name){
-                    r += f.color[0];
-                    g += f.color[1];
-                    b += f.color[2];
-                    if (r > 255) { r = 255 }
-                    if (g > 255) { g = 255 }
-                    if (b > 255) { b = 255 }
-                }
-            });
-            console.log("Les couleurs "+r+" "+g+" "+b);
-        });
-        self.colorBelt = [r,g,b];
-        console.log(self.colorBelt);
-        self.emiter.emit("color_ok");
-    });
 }
 
 pdbSubmit.prototype.nglStart = function(fileObject,fileContent) {
@@ -15453,30 +15425,38 @@ pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
     var belt_radius=Math.sqrt( volume / (pi * (this.halfH * 2)) + Math.pow(protein_radius,2) );
     $(this.volumeValueElem).html( sprintf("%2.1f", volume) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", belt_radius) + ' &#8491');
-    this.nglCorona(belt_radius, jsonFile, detList);
+    this.nglCorona(belt_radius);
 };
 
+pdbSubmit.prototype.chooseColor = function(detList) {
+    var self = this;
+    var r = 0,
+        g = 0,
+        b = 0;
+    this.colorBelt;
+    console.log("En avant les couleurs");
+    detList.forEach(function(e){
+        self.dataJsonForColor.forEach(function(f){
+            if(e.detName === f.name){
+                r += f.color[0];
+                g += f.color[1];
+                b += f.color[2];
+                if (r > 255) { r = 255 }
+                if (g > 255) { g = 255 }
+                if (b > 255) { b = 255 }
+            }
+        });
+        console.log("Les couleurs "+r+" "+g+" "+b);
+    });
+    self.colorBelt = [r,g,b];
+    console.log(self.colorBelt);
+}
 
-
-/*
-    document.addEventListener( "DOMContentLoaded", function(){
-            stage = new NGL.Stage( "viewport" );
-            stage.loadFile( "rcsb://1crn.mmtf", { defaultRepresentation: true } )
-            .then( function( o ){
-                console.log("belt in");
-                console.dir(o);
-                //o.addRepresentation( "cartoon", { color: schemeId } );  // pass schemeId here
-                shape = new NGL.Shape( "shape", { disableImpostor: true } );
-                shape.addCylinder( [ 8, 13, 0 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5 );
-                shapeComp = stage.addComponentFromObject( shape );
-                shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
-
-                //o.centerView();
-            } );
-
-            //geoComp.addRepresentation( "buffer" );
-        } );
-*/
+pdbSubmit.prototype.editionColor = function(detList,deterAndVolumeList){
+    self = this;
+    this.chooseColor(detList);
+    this.nglEditionBelt(detList, deterAndVolumeList);
+};
 
 module.exports = {
     new : function (opt) {
