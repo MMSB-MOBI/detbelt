@@ -13,12 +13,17 @@ div.DeterSubmitDiv hr {
 	border: 0;
 	color: black;
 	background-color: black;
-	} 
+}
+
+div.DeterSubmitDiv h3{
+	margin-top: 0.5em;
+} 
 
 div.DeterSubmitDiv {
 	background-color: whitesmoke;
     border-radius: 12px 12px 12px 12px;
     padding: 1em;
+    padding-top: 0.5em;
     margin-top:1em;
 }
 

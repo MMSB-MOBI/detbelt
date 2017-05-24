@@ -7,7 +7,7 @@ var Backbone = require('backbone');
 var EventEmitter = require('events');
 var io = require('socket.io-client/dist/socket.io.js');
 var path = require('path');
-var bootStrap = require('bootstrap');
+
 var pdbSubmit = require('./web/js/pdbSubmit.js');
 var dBox = require('./web/js/dBox.js');
 var downloadBox = require('./web/js/downloadBox.js');
@@ -42,6 +42,8 @@ $(function(){
     createFooter("body footer");
 
     socket.on("results", function (data) {
+        console.log("data result in app.js : ");
+        console.dir(data);
         cpDetBox.dataTransfert(data);
     });
 
@@ -78,8 +80,9 @@ $(function(){
         cpSubmitBox.nglRefresh(pdbText, data);
     });
 
-    cpDetBox.on("edition",function(detList){
-        cpSubmitBox.editionColor(detList);
+    cpDetBox.on("edition",function(detList, deterAndVolumeList){
+        console.log("go edition");
+        cpSubmitBox.editionColor(detList,deterAndVolumeList);
     });
     
 });
