@@ -53,20 +53,20 @@ $(function(){
         cpSubmitBox.removeClass("col-xs-12");
         cpSubmitBox.addClass("col-xs-8");
         cpDetBox.display(jsonFile);
-        cpDownloadBox.display();
     });
 
     cpSubmitBox.on("display",function(){
         cpSubmitBox.addClass("col-xs-12");
-    })
+    });
 
     cpDownloadBox.on("display",function(){
         cpDownloadBox.addClass("col-xs-4");
-    })
+    });
 
     cpDetBox.on("display",function(){
         cpDetBox.addClass("col-xs-4");
-    })
+    });
+
     cpDetBox.on("submit", function(requestPPM, detList){
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
         cpSubmitBox.setWait("loadON");
@@ -76,6 +76,11 @@ $(function(){
 
     cpDetBox.on("result",function(pdbText, data){
         cpSubmitBox.nglRefresh(pdbText, data);
+        cpDetBox.animationBox();
+    });
+
+    cpDetBox.on("moved",function(){
+        cpDownloadBox.display();
     });
 
     cpDetBox.on("edition",function(detList){

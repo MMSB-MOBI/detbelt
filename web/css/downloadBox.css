@@ -1,21 +1,21 @@
 div.DownloadDiv {
 	background-color: whitesmoke;
     border-radius: 12px 12px 12px 12px;
-    padding-top: 0.5em;
     padding: 0.5em;
+    padding-top: 1px;
     margin-top: 14px;
 }
 
 div.DownloadDiv div.headerDownloadDiv{
 	margin-top: 10px;
 	padding-bottom: 12px;
+	padding-right: 7px;
 }
 
 div.DownloadDiv span.titleH3{
     font-size: 24px;
-    padding-left: 5px;
-    margin-top: 0.5em;
-    margin-bottom: 10px;
+    padding-left: 7px;
+    padding-right: 5px;
     font-weight: 500;
 } 
 
@@ -88,31 +88,6 @@ div.DownloadDiv button.btn-circle{
 	border-radius: 15px;
 }
 
- /*
-  .test + .tooltip > .tooltip-inner {
-      background-color: #73AD21; 
-      color: #FFFFFF; 
-      border: 1px solid green; 
-      padding: 15px;
-      font-size: 20px;
-  }
-
-  .test + .tooltip.top > .tooltip-arrow {
-      border-top: 5px solid green;
-  }
-
-  .test + .tooltip.bottom > .tooltip-arrow {
-      border-bottom: 5px solid blue;
-  }
-
-  .test + .tooltip.left > .tooltip-arrow {
-      border-left: 5px solid red;
-  }
-
-  .test + .tooltip.right > .tooltip-arrow {
-      border-right: 5px solid black;
-  }
-*/
 
 div.DownloadDiv button.btnLink{
 	border-radius: 12px 12px 12px 12px;

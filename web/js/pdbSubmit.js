@@ -18,12 +18,10 @@ pdbSubmit.prototype.drawControlBox = function () {
     $(this.getNode()).find(".pdbSubmitDiv").append('<div class="ctrlBox"></div>');
     var ctrlDiv = $(this.getNode()).find(".pdbSubmitDiv .ctrlBox")[0];
     $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" id="' + turnBoxTag + '" >Set molecule spin on/off</label></div>');
-
     $( "#" + turnBoxTag).on('change',function(){
         if(document.getElementById(turnBoxTag).checked){self.stage.setSpin( [ 0, 1, 0 ], 0.01 )}
             else{self.stage.setSpin( [ 0, 1, 0 ], 0 )}
     });
-
 };
 
 pdbSubmit.prototype.drawResultBox = function () {
@@ -219,6 +217,8 @@ pdbSubmit.prototype.nglEditionBelt = function(detList) {
 pdbSubmit.prototype.chooseColor = function(detList) {
     //this function browse detList and dataDetergentFromJson and if find an equality between the detergents, he increase the RGB and save the color
     var self = this;
+    //var position = $(".DeterSubmitDiv").offset();
+    //console.log(position);
     var r = 0,
         g = 0,
         b = 0;

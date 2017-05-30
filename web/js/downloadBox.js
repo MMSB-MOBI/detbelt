@@ -21,6 +21,7 @@ downloadBox.prototype.display = function() {
     var zipHelp = "zip dossier";
 
     this.divTag = 'div_'+this.idNum;
+
     $(this.getNode()).append(
             '<div class="downloadDiv" id="'+this.divTag+'">'
                 +'<div class="headerDownloadDiv">'
@@ -33,6 +34,9 @@ downloadBox.prototype.display = function() {
                     +'<a href="download/dossier.zip" > <button type="button" data-toggle="tooltip" data-placement="bottom" title="'+zipHelp+'" class="btn btn-info btn-sm btnLink"> <i class="fa fa-2x fa-file-archive-o" aria-hidden="true"></i> </button> </a>'
                 +'</div>'
             + '</div>');
+
+    $('#w_3').insertBefore('#w_2');
+
     this.emiter.emit('display');
 
     $('.help-icon').tooltip({ "html" : true, "title" : listHelp });

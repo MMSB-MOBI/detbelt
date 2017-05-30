@@ -20,6 +20,31 @@ dBox.prototype.toggleSubmissionButtonState = function (){
     }
 };
 
+dBox.prototype.animationBox = function(data){
+    self = this;
+    console.log("bouge cette boite");
+    $(this.getNode()).animate({
+        //position: absolute,
+        top: "130",
+    }, 1500, function() {
+        self.emiter.emit('moved');
+
+        var topBox = $( self.getNode() ).position().top ;
+        console.log("top relative : "+topBox);
+
+        var topBox = $( self.getNode() ).offset().top ;
+        console.log("top absolue : "+topBox);
+
+        $(self.getNode()).offset({ top : 320 });
+
+        topBox = $( self.getNode() ).position().top ;
+        console.log("top relative : "+topBox);
+
+        var topBox = $( self.getNode() ).offset().top ;
+        console.log("top absolue : "+topBox);
+    });
+}
+
 dBox.prototype.validationAndListDet = function(){
     //this function test the field input.dNumber and save each detname and qt in detListToServer
     var self = this;
@@ -31,7 +56,7 @@ dBox.prototype.validationAndListDet = function(){
         if(qt===""){ 
             console.log("empty field"); 
             validateField = false;
-            $(this).find(" .dNumber").addClass("error");              
+            $(this).find(" .dNumber").addClass("error");             
         } else if (! re.test(qt)) {
             validateField = false;
             $(this).find(" .dNumber").addClass("error");
