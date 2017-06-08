@@ -45,6 +45,10 @@ $(function(){
         cpDetBox.dataTransfert(data);
     });
 
+    socket.on("fileAvailable", function (data) {
+        cpDownloadBox.downloadFile(data);
+    });
+
     cpSubmitBox.display(jsonFile);
     
 
@@ -54,7 +58,15 @@ $(function(){
         cpSubmitBox.addClass("col-xs-8");
         cpDetBox.display(jsonFile);
     });
-
+/*
+    cpSubmitBox.on("giveCoronaData",function(halfH, proteinRadius, ahs, volume, beltRadius){
+        self.halfH = halfH;
+        self.proteinRadius = proteinRadius;
+        self.ahs = ahs;
+        self.volume = volume;
+        self.beltRadius = beltRadius;       
+    });
+*/
     cpSubmitBox.on("display",function(){
         cpSubmitBox.addClass("col-xs-12");
     });
@@ -71,6 +83,7 @@ $(function(){
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
         cpSubmitBox.setWait("loadON");
         cpSubmitBox.chooseColor(data.deterData);
+        console.log("submit : "+data);
         socket.emit("submission", data);
     });
 
@@ -87,4 +100,39 @@ $(function(){
         cpSubmitBox.editionColor(detList);
     });
     
+
+    
+    cpDownloadBox.on("clickDL", function(type){
+        console.log("passe par app.js");
+         var data = cpSubmitBox.getCoronaData();
+         console.log(data);
+         socket.emit(type, data);
+    });
 });
+
+  /* DELETE THESE
+    cpDownloadBox.on("clickDownloadPymol", function(){
+        console.log("passe par app.js");
+        var data = {"halfH" : self.halfH, "beltRadius" : self.belt_radius};
+        socket.emit("downloadPymol", data);
+    });
+
+    cpDownloadBox.on("clickDownloadPdb", function(){
+        console.log("passe par app.js");
+        socket.emit("downloadPdb");
+    });
+
+    cpDownloadBox.on("clickDownloadZip", function(){
+        console.log("passe par app.js");
+        var data = {"halfH" : self.halfH, "beltRadius" : self.belt_radius};
+        socket.emit("downloadZip", data);
+    });
+
+    cpDownloadBox.on("clickDownloadData", function(){
+        console.log("passe par app.js");
+        var data = {"halfH" : self.halfH, "proteinRadius" : self.proteinRadius, "ahs" : self.ahs, "volumeCorona" : self.volume, "beltRadius" : self.beltRadius};
+        socket.emit("downloadData", data);
+    });
+
+*/
+

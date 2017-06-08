@@ -20,7 +20,7 @@ div.DownloadDiv span.titleH3{
 } 
 
 div.DownloadDiv div.buttonDownloadDiv {
-	padding-left: 4em;
+	padding-left: 20px;
 	padding-bottom: 10px;
 }
 
@@ -95,5 +95,9 @@ div.DownloadDiv button.btnLink{
 	padding-bottom: 10px;
 	padding-left: 12px;
 	padding-right: 12px;
+}
+
+div.DownloadDiv div.liensDownload{
+	display:none;
 }
 

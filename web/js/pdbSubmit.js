@@ -39,6 +39,9 @@ pdbSubmit.prototype.drawResultBox = function () {
         + '<td>Inner radius <span class="notEditableResults">' + self.data.proteinRadius + ' &#8491</span></td>'
         + '<td>Outer radius <span class="editableResults">' + sprintf("%2.1f", self.data.radius) + ' &#8491</span></td>'
         + '</tr>'
+        + '<tr>'
+        + '<td colspan="2">AHS <span class="editableResults"> '+ self.data.ahs +' &#8491</span></td>'
+        + '</tr>'
         + '</tbody></table>');
 
     // Store Volume and crow radius dom element for further modifications
@@ -154,12 +157,12 @@ pdbSubmit.prototype.nglStart = function(fileObject) {
     });
 }
 
-pdbSubmit.prototype.nglCorona = function(belt_radius) {
+pdbSubmit.prototype.nglCorona = function(beltRadius) {
     //nglCorona destroy the old wrown and create the new with belt_radius argument
     var comp = this.stage.compList[1];
     this.stage.removeComponent(comp); //destroy old crown
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
-    shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], this.colorBelt, belt_radius); //create new crown with colorBelt who is define in fct choose color
+    shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], this.colorBelt, this.beltRadius); //create new crown with colorBelt who is define in fct choose color
     var shapeComp = this.stage.addComponentFromObject( shape );
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
     this.nglStructureView_belt.autoView();
@@ -194,24 +197,36 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data) {
 
 pdbSubmit.prototype.nglEditionBelt = function(detList) {
     //fct to calculate the new volume and edit the crown after the change of the detergents stored in detList
-    var volume = 0;
+    self = this;
+    this.volume = 0;
     var pi = 3.1415;
-    var protein_radius = parseFloat(this.data.proteinRadius);
+    this.proteinRadius = parseFloat(this.data.proteinRadius);
     detList.forEach(function(e){
         var name = e.detName;
         self.dataDetergentFromJson.forEach(function(i){
             if(name===i.name){
                 var ni = parseFloat(e.qt);
                 var vi = parseFloat(i.vol);
-                volume += ni * vi;
+                self.volume += ni * vi;
             } 
         });
     });
+    this.beltRadius=Math.sqrt( this.volume / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
+    $(this.volumeValueElem).html( sprintf("%2.1f", this.volume) + ' &#8491<sup>3</sup>' );
+    $(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
+    this.nglCorona(this.beltRadius);
+    //this.emiter.emit('giveCoronaData', this.halfH, this.data.proteinRadius, this.data.ahs, this.volume, this.beltRadius);
+};
 
-    var belt_radius=Math.sqrt( volume / (pi * (this.halfH * 2)) + Math.pow(protein_radius,2) );
-    $(this.volumeValueElem).html( sprintf("%2.1f", volume) + ' &#8491<sup>3</sup>' );
-    $(this.crownValueElem).html( sprintf("%2.1f", belt_radius) + ' &#8491');
-    this.nglCorona(belt_radius);
+pdbSubmit.prototype.getCoronaData = function() {
+    console.log("getCoronaData");
+    return { 
+            "halfH" : this.halfH, 
+            "proteinRadius" : this.proteinRadius,
+            "ahs" : this.data.ahs, 
+            "volumeCorona" : this.volume,
+            "beltRadius" : this.beltRadius
+         };
 };
 
 pdbSubmit.prototype.chooseColor = function(detList) {

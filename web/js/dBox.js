@@ -20,7 +20,7 @@ dBox.prototype.toggleSubmissionButtonState = function (){
     }
 };
 
-dBox.prototype.animationBox = function(data){
+dBox.prototype.animationBox = function(){
     self = this;
     console.log("bouge cette boite");
     $(this.getNode()).animate({
@@ -28,20 +28,7 @@ dBox.prototype.animationBox = function(data){
         top: "130",
     }, 1500, function() {
         self.emiter.emit('moved');
-
-        var topBox = $( self.getNode() ).position().top ;
-        console.log("top relative : "+topBox);
-
-        var topBox = $( self.getNode() ).offset().top ;
-        console.log("top absolue : "+topBox);
-
         $(self.getNode()).offset({ top : 320 });
-
-        topBox = $( self.getNode() ).position().top ;
-        console.log("top relative : "+topBox);
-
-        var topBox = $( self.getNode() ).offset().top ;
-        console.log("top absolue : "+topBox);
     });
 }
 
@@ -100,8 +87,10 @@ dBox.prototype.drawButtonRequest = function(){
     $(this.getNode()).find(".buttonGo")
         .append('<button type="button" class="btn btn-success buttonRequest">Visualize detergent belt</button>'
                 +'<div class="ppmCheckBoxDiv"><input type="checkbox" id="' + self.PPMBoxTag + '">'
-                +'<label style="padding-left: 0.5em;" for="' + self.PPMBoxTag + '"> PDB file was processed by PPM server </label></div>'
+                +'<label style="padding-left: 0.5em;" for="' + self.PPMBoxTag + '"> PDB file was processed by <a href="http://opm.phar.umich.edu/server.php">PPM server</a> </label></div>'
+                +'<div class=note>(faster as it requires les calculation) </div> '
                 );
+
 
     $(this.getNode()).find(".buttonRequest").click(function(event){
         if ( $(self.getNode()).find('select').length == 0 ) return;
@@ -110,7 +99,8 @@ dBox.prototype.drawButtonRequest = function(){
 
         if(document.getElementById(self.PPMBoxTag).checked){ self.requestPPM = false }
         else { self.requestPPM = true }
-        $(self.getNode()).find("text").remove();
+        $(self.getNode()).find(".ppmCheckBoxDiv").remove();
+        $(self.getNode()).find(".note").remove();
         // Disable submission and click when user send request
         $(this).addClass('disabled');
         $(this).off("click");
@@ -123,14 +113,19 @@ dBox.prototype.dataTransfert = function(data){
     //when the server send the reponse send event result and draw buttonEdition and buttonRefresh
     //data is the var containing the reponse of the server
     var self = this;
+    //console.log("donnees fichier PDB transferes : " + data.fileContent);
+    console.log("donnees corona transferes : " );
+    console.dir(data.data);
+    console.log("donnees chemin fichier transferes : " );
+    console.dir(data.files);
     var pdbText = data.fileContent;
-    var coronaData = data.data;
+    this.coronaData = data.data;
     self.modeEdition = true;
-    self.emiter.emit("result", pdbText, coronaData);
+    self.emiter.emit("result", pdbText, this.coronaData);
     $(self.getNode()).find(".buttonRequest").remove();
     $(self.getNode()).find('.ppmCheckBoxDiv').remove();
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-success btn-sm buttonEdition">Recompute the belt</button>');
-    $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-warning btn-sm buttonRefresh">Try an other protein</button>');
+    $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-warning btn-sm buttonRefresh">Try another protein</button>');
     $(self.getNode()).find(".newDet").removeClass('disabled = true');
     $(self.getNode()).find(".buttonEdition").click(function(){
         if ( $(self.getNode()).find('select').length == 0 ) {
