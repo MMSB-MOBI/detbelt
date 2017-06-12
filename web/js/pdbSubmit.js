@@ -32,15 +32,15 @@ pdbSubmit.prototype.drawResultBox = function () {
 
     $(resultDiv).append('<table class="table"><thead><tr><th colspan="2">Detergent Belt characteristics</th></tr></thead><tbody>'
         + '<tr>' 
-        + '<td>Half-height <span class="notEditableResults">' + self.data.halfH + ' &#8491</span></td>'
-        + '<td>Volume <span class="editableResults">' + sprintf("%2.1f", self.data.volTot) + ' &#8491<sup>3</sup></span></td>'
+        + '<td>Half-height <span class="notEditableResults">' + sprintf("%2.1f", self.data.halfH) + ' &#8491</span></td>'
+        + '<td>Volume <span class="editableResults">' + sprintf("%2f", self.data.volumeCorona) + ' &#8491<sup>3</sup></span></td>'
         + '</tr>'
         + '<tr>'
-        + '<td>Inner radius <span class="notEditableResults">' + self.data.proteinRadius + ' &#8491</span></td>'
-        + '<td>Outer radius <span class="editableResults">' + sprintf("%2.1f", self.data.radius) + ' &#8491</span></td>'
+        + '<td>Inner radius <span class="notEditableResults">' + sprintf("%2.1f", self.data.proteinRadius) + ' &#8491</span></td>'
+        + '<td>Outer radius <span class="editableResults">' + sprintf("%2.1f", self.data.beltRadius) + ' &#8491</span></td>'
         + '</tr>'
         + '<tr>'
-        + '<td colspan="2">AHS <span class="editableResults"> '+ self.data.ahs +' &#8491</span></td>'
+        + '<td colspan="2">AHS <span class="editableResults"> '+ self.data.ahs +' &#8491<sup>2</sup></span></td>'
         + '</tr>'
         + '</tbody></table>');
 
@@ -157,66 +157,95 @@ pdbSubmit.prototype.nglStart = function(fileObject) {
     });
 }
 
-pdbSubmit.prototype.nglCorona = function(beltRadius) {
-    //nglCorona destroy the old wrown and create the new with belt_radius argument
-    var comp = this.stage.compList[1];
-    this.stage.removeComponent(comp); //destroy old crown
-    var shape = new NGL.Shape("shape", { disableImpostor: true } );
-    shape.addCylinder([0, -1 * this.halfH, 0], [0, this.halfH, 0 ], this.colorBelt, this.beltRadius); //create new crown with colorBelt who is define in fct choose color
-    var shapeComp = this.stage.addComponentFromObject( shape );
-    shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
-    this.nglStructureView_belt.autoView();
-}
-
-pdbSubmit.prototype.nglRefresh = function(pdbText, data) {
+pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     //pdbText is the pdb file containing the prot oriented
     //data containing halfH and radius of the crown
     //fct to add the crown after the request to the server
     var self = this;
     this.pdbText = pdbText;
     this.data = data;
-    var blob = new Blob([pdbText],{ type:'text/plain' });
-    
+    this.detList = detList;
+    var blob = new Blob([this.pdbText],{ type:'text/plain' });
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
             self.halfH = parseFloat(self.data.halfH);
             var basis = new NGL.Matrix4();
             self.stage.viewerControls.align(basis);
             self.nglStructureView_belt = o;
-            var shape = new NGL.Shape("shape", { disableImpostor: true } );
-            var radius = parseFloat(self.data.radius);
-            shape.addCylinder([0, -1 * self.halfH, 0], [0, self.halfH, 0 ], self.colorBelt, radius);
-            var shapeComp = self.stage.addComponentFromObject( shape );
-            shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
-            self.nglStructureView_belt.autoView();
+            self.beltRadius = parseFloat(self.data.beltRadius);
+            console.log("radius : "+self.beltRadius+" halfH : "+self.halfH);
+            self.nglEditionData(self.detList);
             self.setWait("loadOFF");
             self.drawControlBox();
             self.drawResultBox();
         });
 };
 
-pdbSubmit.prototype.nglEditionBelt = function(detList) {
+pdbSubmit.prototype.nglCorona = function() {
+    self = this;
+    this.oldPoint = this.halfH;
+    this.detList.forEach(function(e){
+        self.dataDetergentFromJson.forEach(function(i){
+            if(e.detName===i.name){
+                var ni = parseFloat(e.qt);
+                var vi = parseFloat(i.vol);
+                var v1= ni * vi;
+                self.createCylinder(self.volumeTOT,v1,i.color);
+            } 
+        }); 
+    });
+}
+
+pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
+    var shape = new NGL.Shape("shape", { disableImpostor: true } );
+    var cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
+    var pointY = this.oldPoint - cylH;
+    shape.addCylinder([0, this.oldPoint, 0], [0, pointY, 0], color, this.beltRadius);
+    var shapeComp = this.stage.addComponentFromObject(shape);
+    shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
+    this.oldPoint = pointY;
+    this.nglStructureView_belt.autoView();
+}
+
+pdbSubmit.prototype.nglEditionData = function(detList) {
     //fct to calculate the new volume and edit the crown after the change of the detergents stored in detList
     self = this;
-    this.volume = 0;
+    this.detList = detList;
+    this.volumeTOT = 0;
     var pi = 3.1415;
     this.proteinRadius = parseFloat(this.data.proteinRadius);
-    detList.forEach(function(e){
+    this.detList.forEach(function(e){
         var name = e.detName;
         self.dataDetergentFromJson.forEach(function(i){
             if(name===i.name){
                 var ni = parseFloat(e.qt);
                 var vi = parseFloat(i.vol);
-                self.volume += ni * vi;
+                self.volumeTOT += ni * vi;
             } 
         });
     });
-    this.beltRadius=Math.sqrt( this.volume / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
-    $(this.volumeValueElem).html( sprintf("%2.1f", this.volume) + ' &#8491<sup>3</sup>' );
+    this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
+    $(this.volumeValueElem).html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
-    this.nglCorona(this.beltRadius);
-    //this.emiter.emit('giveCoronaData', this.halfH, this.data.proteinRadius, this.data.ahs, this.volume, this.beltRadius);
+    this.nglCorona();
 };
+
+pdbSubmit.prototype.removeOldCorona = function(detList) {
+    self = this;
+    console.log("NGLCorona compList : ");
+    console.log(this.stage.compList);
+    var iToDel = [];
+    this.stage.compList.forEach(function(e, i){
+        if(i === 0) return;
+        iToDel.unshift(i);
+    });
+
+    iToDel.forEach(function(e){
+        self.stage.removeComponent(self.stage.compList[e]);
+    });
+    console.log(this.stage.compList);
+    this.nglEditionData(detList);
+}
 
 pdbSubmit.prototype.getCoronaData = function() {
     console.log("getCoronaData");
@@ -224,39 +253,10 @@ pdbSubmit.prototype.getCoronaData = function() {
             "halfH" : this.halfH, 
             "proteinRadius" : this.proteinRadius,
             "ahs" : this.data.ahs, 
-            "volumeCorona" : this.volume,
-            "beltRadius" : this.beltRadius
-         };
-};
-
-pdbSubmit.prototype.chooseColor = function(detList) {
-    //this function browse detList and dataDetergentFromJson and if find an equality between the detergents, he increase the RGB and save the color
-    var self = this;
-    //var position = $(".DeterSubmitDiv").offset();
-    //console.log(position);
-    var r = 0,
-        g = 0,
-        b = 0;
-    this.colorBelt;
-    detList.forEach(function(e){
-        self.dataDetergentFromJson.forEach(function(f){
-            if(e.detName === f.name){
-                r += f.color[0];
-                g += f.color[1];
-                b += f.color[2];
-                if (r > 255) { r = 255 }
-                if (g > 255) { g = 255 }
-                if (b > 255) { b = 255 }
-            }
-        });
-    });
-    self.colorBelt = [r,g,b];  
-}
-
-pdbSubmit.prototype.editionColor = function(detList){
-    self = this;
-    this.chooseColor(detList);
-    this.nglEditionBelt(detList, self.dataDetergentFromJson);
+            "volumeCorona" : this.volumeTOT,
+            "beltRadius" : this.beltRadius,
+            "detColor" : this.colorBelt
+        };
 };
 
 module.exports = {

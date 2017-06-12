@@ -21,13 +21,15 @@ dBox.prototype.toggleSubmissionButtonState = function (){
 };
 
 dBox.prototype.animationBox = function(){
-    self = this;
+    var self = this;
     console.log("bouge cette boite");
     $(this.getNode()).animate({
         //position: absolute,
         top: "130",
     }, 1500, function() {
-        self.emiter.emit('moved');
+        console.dir(self);
+        self.emiter.emit("moved");
+        console.log("boite a terminé de bouger");
         $(self.getNode()).offset({ top : 320 });
     });
 }
@@ -88,7 +90,7 @@ dBox.prototype.drawButtonRequest = function(){
         .append('<button type="button" class="btn btn-success buttonRequest">Visualize detergent belt</button>'
                 +'<div class="ppmCheckBoxDiv"><input type="checkbox" id="' + self.PPMBoxTag + '">'
                 +'<label style="padding-left: 0.5em;" for="' + self.PPMBoxTag + '"> PDB file was processed by <a href="http://opm.phar.umich.edu/server.php">PPM server</a> </label></div>'
-                +'<div class=note>(faster as it requires les calculation) </div> '
+                +'<div class=note>(faster as it requires less calculation) </div> '
                 );
 
 
@@ -113,15 +115,13 @@ dBox.prototype.dataTransfert = function(data){
     //when the server send the reponse send event result and draw buttonEdition and buttonRefresh
     //data is the var containing the reponse of the server
     var self = this;
-    //console.log("donnees fichier PDB transferes : " + data.fileContent);
     console.log("donnees corona transferes : " );
     console.dir(data.data);
-    console.log("donnees chemin fichier transferes : " );
-    console.dir(data.files);
     var pdbText = data.fileContent;
     this.coronaData = data.data;
     self.modeEdition = true;
-    self.emiter.emit("result", pdbText, this.coronaData);
+    self.emiter.emit("result", pdbText, this.coronaData, self.detList);
+    console.log("a émis result");
     $(self.getNode()).find(".buttonRequest").remove();
     $(self.getNode()).find('.ppmCheckBoxDiv').remove();
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-success btn-sm buttonEdition">Recompute the belt</button>');
@@ -133,7 +133,8 @@ dBox.prototype.dataTransfert = function(data){
         }
         var validQt = self.validationAndListDet();
         if (!validQt) return false;
-        self.emiter.emit("edition", self.detList, self.dataDetergentFromJson);
+        self.emiter.emit("edition", self.detList);
+        console.log("a émis edition");
     });
     $(self.getNode()).find(".buttonRefresh").click(function(){
         window.location.reload();

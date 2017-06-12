@@ -11,6 +11,7 @@ downloadBox.prototype.constructor = downloadBox;
 downloadBox.prototype.display = function() {
     //display of downloadBox and the download button
     var self = this;
+    console.log("display download box");
     var listHelp = '<div class="downloadTooltip"><ul class="fa-ul">'
                     +    '<li> <i class="fa fa-2x fa-li fa-pinterest-p">   </i> PDB coordinates file</li>'
                     +    '<li> <i class="fa fa-2x fa-li fa-file-code-o">   </i> PYMOL script</li>'
