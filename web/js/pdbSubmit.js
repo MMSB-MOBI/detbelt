@@ -1,3 +1,4 @@
+//pdbSubmit SubmitBox with canva
 var Core = require('./Core.js').Core;
 var sprintf = require("sprintf-js").sprintf,
     vsprintf = require("sprintf-js").vsprintf;
@@ -256,7 +257,7 @@ pdbSubmit.prototype.nglEditionBelt = function(detList, deterAndVolumeList) {
     var belt_radius=Math.sqrt( volume / (pi * (this.halfH * 2)) + Math.pow(protein_radius,2) );
     $(this.volumeValueElem).html( sprintf("%2.1f", volume) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", belt_radius) + ' &#8491');
-    this.nglCorona(belt_radius, jsonFile, detList);
+    this.nglCorona(belt_radius);
 };
 
 
