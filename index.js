@@ -24,7 +24,7 @@ var HTTP_lib = require('./HTTP_lib.js');
 var jsonfile = require('jsonfile');
 
 
-var worker;
+var worker, downloader;
 var bean, pdbFile, deterFile;
 var port = 3001;
 var bFront = false, bBack = false, bPPM = false;
@@ -34,6 +34,7 @@ var bFront = false, bBack = false, bPPM = false;
 * Parsing a JSON file
 */
 var parseConfig = function (fileName){
+    if (! fileName) console.log('ERROR in parseConfig : no fileName specified');
     try { var obj = jsonfile.readFileSync(fileName); }
     catch (err) { throw err; }
     return obj;
@@ -66,13 +67,15 @@ FOR FRONT
 ********/
 if (bFront) {
     worker = pipeline.mimicCompute;
+    downloader = pipeline.mimicDownload;
 
 /***********************
 FOR BACK OR NORMAL MODES
 ***********************/
 } else {
     pipeline.start(bean);
-    worker = pipeline.corona;
+    worker = pipeline.compute;
+    downloader = pipeline.download; // not used in back-end mode
 }
 
 /*******
@@ -85,7 +88,7 @@ if (bBack) {
 FOR FRONT OR NORMAL MODES
 ************************/
 } else {
-    HTTP_lib.httpStart(worker);
+    HTTP_lib.httpStart(worker, downloader, bean.scriptVariables.DOWNLOAD_DIR);
 }
 
 
