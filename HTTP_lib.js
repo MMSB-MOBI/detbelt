@@ -64,6 +64,7 @@ var setClientRoute = function(app) {
     app.use('/bundle', express.static(__dirname + '/js'));
     app.use('/assets',express.static(__dirname+'/data/bin'));
     app.use('/ngl',express.static(__dirname+'/web/js/ngl-master/dist'));
+    app.use('/download',express.static(__dirname+'/data/download'));
 }
 
 

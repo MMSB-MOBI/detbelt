@@ -1,0 +1,103 @@
+div.DownloadDiv {
+	background-color: whitesmoke;
+    border-radius: 12px 12px 12px 12px;
+    padding: 0.5em;
+    padding-top: 1px;
+    margin-top: 14px;
+}
+
+div.DownloadDiv div.headerDownloadDiv{
+	margin-top: 10px;
+	padding-bottom: 12px;
+	padding-right: 7px;
+}
+
+div.DownloadDiv span.titleH3{
+    font-size: 24px;
+    padding-left: 7px;
+    padding-right: 5px;
+    font-weight: 500;
+} 
+
+div.DownloadDiv div.buttonDownloadDiv {
+	padding-left: 20px;
+	padding-bottom: 10px;
+}
+
+div.DownloadDiv ul{
+	list-style-type:none;
+}
+
+div.DownloadDiv li{
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+
+div.DownloadDiv button.btnLink{
+	margin-left: 2em;
+}
+div.DownloadDiv div.downloadTooltip {
+	min-width: 200px;
+	padding-top: 14px;
+	padding-left: 20px;
+}
+
+div.DowloadDiv span.help-icon{
+	margin-top: 4px; 
+	margin-right: 10px;
+}
+
+div.DownloadDiv .help-icon + .tooltip {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  	font-size: 14px;
+  	font-style: normal;
+  	font-weight: normal;
+  	line-height: 1.5;
+  	text-align: left;
+  	text-align: start;
+  	text-decoration: none;
+  	text-shadow: none;
+  	text-transform: none;
+  	letter-spacing: normal;
+  	word-break: normal;
+  	word-spacing: normal;
+  	word-wrap: break-word;
+  	white-space: normal;
+}
+
+div.DownloadDiv .help-icon + .tooltip > .tooltip-inner {
+	max-width: none;
+	padding: 3px 8px;
+	color: #000;
+	text-align: left;
+	background-color: #ffffff;
+	border-radius: 4px;
+}
+
+div.DownloadDiv button.btn-circle{
+	position: relative;
+    bottom: 3em;
+    left: 0.5em;
+	float: right;
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	padding: 2px 0;
+	font-size: 12px;
+	line-height: 1.42;
+	border-radius: 15px;
+}
+
+
+div.DownloadDiv button.btnLink{
+	border-radius: 12px 12px 12px 12px;
+	padding-top : 10px;
+	padding-bottom: 10px;
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+div.DownloadDiv div.liensDownload{
+	display:none;
+}
+
