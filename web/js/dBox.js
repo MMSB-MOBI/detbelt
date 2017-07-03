@@ -92,6 +92,8 @@ dBox.prototype.drawButtonRequest = function(){
                 +'<label style="padding-left: 0.5em;" for="' + self.PPMBoxTag + '"> PDB file was processed by <a href="http://opm.phar.umich.edu/server.php">PPM server</a> </label></div>'
                 +'<div class=note>(faster as it requires less calculation) </div> '
                 );
+    $(this.getNode()).find("div.ppmCheckBoxDiv input").prop('checked', true);
+    $(this.getNode()).find("div.ppmCheckBoxDiv input").attr("disabled", true);
 
 
     $(this.getNode()).find(".buttonRequest").click(function(event){
