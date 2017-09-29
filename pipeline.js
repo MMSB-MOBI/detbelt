@@ -32,6 +32,21 @@ var detergentDumper = function (list) {
 
 
 /*
+* Create the string containing the volume of each detergent
+*/
+var deterVolDumper = function (list) {
+    if (! list) console.log('ERROR in deterVolDumper : no list specified');
+    var string = '';
+    for (var i in list) {
+        console.log(i);
+        console.log(list[i]);
+        string += list[i].name + ' ' + list[i].vol + '\n';
+    }
+    return string;
+}
+
+
+/*
 * Initialize the job manager thanks to the settings in @bean
 */
 var initBackend = function(bean) {
@@ -181,6 +196,7 @@ var configJobCorona = function (cacheDir, requestPPM) {
 
 
 
+
 /*
 * Corona project computation
 * @data [JSON] = contains :
@@ -290,10 +306,20 @@ var tabToString = function (array) {
 var create_pymolScript = function (halfH, beltRadius, colorBelt = [0.3,0.3,0.3], lowerError = 0, upperError = 0) {
     if (! halfH) console.log('ERROR in create_pymolScript : no halfThickness specified');
     if (! beltRadius) console.log('ERROR in create_pymolScript : no beltRadius specified');
+    
+    /* VERSION FOR THE "DRAWCORONA" FUNCTION
     var re_line = "def drawCorona (PDBfile, halfThickness = , beltRadius = , lowerError = , upperError = , color = ):";
+    var new_line = "def drawCorona (PDBfile, halfThickness = "+ halfH +", beltRadius = "+ beltRadius.toFixed(2) +", lowerError = "+ lowerError +", upperError = "+ upperError +", color = "+ tabToString(colorBelt) +"):";
     // replace all the values of the function
     content = readFileContent(dictJobManager.scriptVariables.BIN_DIR + '/pymolScript.pml')
-    .replace(re_line, "def drawCorona (PDBfile, halfThickness = "+ halfH +", beltRadius = "+ beltRadius.toFixed(2) +", lowerError = "+ lowerError +", upperError = "+ upperError +", color = "+ tabToString(colorBelt) +"):");
+    .replace(re_line, new_line);
+    */
+
+    var re_values = "halfThickness = \nbeltRadius = \ncolor = ";
+    var new_values = "halfThickness = "+ halfH + "\nbeltRadius = " + beltRadius.toFixed(2) + "\ncolor = " + tabToString(colorBelt);
+    content = readFileContent(dictJobManager.scriptVariables.BIN_DIR + '/pymolScript.pml')
+    .replace(re_values, new_values);
+
     return {"pymolScript.pml" : content};
 }
 

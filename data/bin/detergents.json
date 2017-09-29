@@ -5,6 +5,7 @@
 	"data" : [
 		{ "name" : "DDM", "vol" : 453, "color" : [0,1,0]},
 		{ "name" : "FC12", "vol" : 344, "color" : [0.25,1,0.75]},
+		{ "name" : "FC14", "vol" : 385.9, "color" : [0.25,1,0.75]},
 		{ "name" : "OG", "vol" : 267.5, "color" : [1,1,0]},
 		{ "name" : "LMNG", "vol" : 885.7, "color" : [1,0.6,0.6]},
 		{ "name" : "Cholate", "vol" : 367.5, "color" : [255,0,255]}
