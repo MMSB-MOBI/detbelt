@@ -6,7 +6,7 @@
 # defined in the sbatch :
 # - pdbFile = PDB file to orient
 # - detergentFile = quantities and detergent molecules given by the client
-# - detergentVolumes = volumes of each detergent molecules
+# - detergentVolumes = JSON of detergents and their characteristics
 # - orientForDisplay = perl script to re-orient the PDB (the protein need to be align with the Z axis)
 # - calculateVolTot = python script to determinate the total volume of the corona
 # - calculateRadius = R script to determinate the radius of the protein and the belt

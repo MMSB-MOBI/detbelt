@@ -183,7 +183,7 @@ var configJobCorona = function (cacheDir, requestPPM) {
     exportVar['pdbFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.pdb';
     exportVar['detergentFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.detergent';
     exportVar['orientForDisplay'] = dictJobManager.scriptVariables.BIN_DIR + '/rotateDirty.pl';
-    exportVar['detergentVolumes'] = dictJobManager.scriptVariables.BIN_DIR + '/detergentVolumes.txt';
+    exportVar['detergentVolumes'] = dictJobManager.scriptVariables.BIN_DIR + '/detergents.json';
     exportVar['calculateVolTot'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateVolTot.py';
     exportVar['calculateRadius'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateRadius.R';
     modules.push('naccess');
