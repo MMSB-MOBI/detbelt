@@ -12,10 +12,10 @@
 #####################
 ##### VARIABLES #####
 #####################
-PDBfile = """/path/to/your/file.pdb"""
-halfThickness = 
-beltRadius = 
-color = 
+PDBfile = """./file.pdb"""
+halfThickness = 15.2
+beltRadius = 42.30
+color = [0.3,0.3,0.3]
 
 ###############################
 ##### PREPARE ENVIRONMENT #####
@@ -36,8 +36,8 @@ hide everything, molA
 #####################
 
 # dimensions
-x1, y1, z1 = 0, 0, halfThickness # start point
-x2, y2, z2 = 0, 0, -1 * halfThickness # end point
+x1, y1, z1 = 0, halfThickness, 0 # start point
+x2, y2, z2 = 0, -1 * halfThickness, 0 # end point
 # colors
 r1,g1,b1 = color[0],color[1],color[2]
 
