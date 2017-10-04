@@ -64,7 +64,7 @@ var setClientRoute = function(app, downloadRoute) {
     app.use(bodyParser.json({limit : '5mb'})); // for parsing application/json
     app.use(bodyParser.urlencoded({limit : '5mb', extended : false}));
     app.use('/bundle', express.static(__dirname + '/js'));
-    app.use('/assets', express.static(__dirname + '/data/bin'));
+    app.use('/assets', express.static(__dirname + '/static'));
     app.use('/ngl', express.static(__dirname + '/web/js/ngl-master/dist'));
     app.use('/resultSample', express.static(__dirname + '/data/resultSample/'));
     app.use('/download', express.static(downloadRoute));
@@ -83,17 +83,17 @@ var httpStart = function (worker, downloader, downloadRoute) {
     if (! worker) throw 'No worker function detected';
     if (! downloader) throw 'No downloader function detected';
     if (! downloadRoute) throw 'No downloadRoute function detected';
-	
+
     setClientRoute(app, downloadRoute);
 	app.get('/', function(req, res) {
         res.sendFile(__dirname+'/web/html/template.html');
     });
-    
+
     // listening the server
     server.listen(port, function () {
         console.log('Server listening on port ' + port + ' !');
     });
-    
+
     // connection via socket
     io.on("connection", function (socket) {
         var results; // keep the results in case user wants to download or else

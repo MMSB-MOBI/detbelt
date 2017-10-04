@@ -291,6 +291,7 @@ var create_pymolScript = function (halfH, beltRadius, colorBelt = [0.3,0.3,0.3],
     if (! halfH) console.log('ERROR in create_pymolScript : no halfThickness specified');
     if (! beltRadius) console.log('ERROR in create_pymolScript : no beltRadius specified');
     var re_line = "def drawCorona (PDBfile, halfThickness = , beltRadius = , lowerError = , upperError = , color = ):";
+
     // replace all the values of the function
     content = readFileContent(dictJobManager.scriptVariables.BIN_DIR + '/pymolScript.pml')
     .replace(re_line, "def drawCorona (PDBfile, halfThickness = "+ halfH +", beltRadius = "+ beltRadius.toFixed(2) +", lowerError = "+ lowerError +", upperError = "+ upperError +", color = "+ tabToString(colorBelt) +"):");

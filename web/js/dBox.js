@@ -37,22 +37,22 @@ dBox.prototype.animationBox = function(){
 dBox.prototype.validationAndListDet = function(){
     //this function test the field input.dNumber and save each detname and qt in detListToServer
     var self = this;
-    self.detList = []; 
+    self.detList = [];
     var validateField = true;
     var re = /^[0-9]+$/; // only integer allowed
     $(self.getNode()).find('select').parent().each(function(){
         var qt = $(this).find('input.dNumber').val();
-        if(qt===""){ 
-            console.log("empty field"); 
+        if(qt===""){
+            console.log("empty field");
             validateField = false;
-            $(this).find(" .dNumber").addClass("error");             
+            $(this).find(" .dNumber").addClass("error");
         } else if (! re.test(qt)) {
             validateField = false;
             $(this).find(" .dNumber").addClass("error");
         } else if(parseFloat(qt) < 1){
             $(this).find(" .dNumber").addClass("error");
             validateField = false;
-        } 
+        }
         var name = $(this).find("option:selected").text();
         self.detList.push({ "detName" : name, "qt" : qt });
     });
@@ -64,24 +64,24 @@ dBox.prototype.drawEmptySectionAndButton = function() {
     var self = this;
     $(this.getNode()).
         append(
-            '<div class="DeterSubmitDiv">' 
+            '<div class="DeterSubmitDiv">'
                 + '<h3>Choose your detergent set</h3>'
                 + '<div class="enterDet"></div>'
                 + '<div class="buttonNew"></div>'
             + '</div>');
 
-    $(this.getNode()).find(".buttonNew").append('<button type="button" class="btn btn-primary btn-sm newDet">Add a new detergent</button>'); 
+    $(this.getNode()).find(".buttonNew").append('<button type="button" class="btn btn-primary btn-sm newDet">Add a new detergent</button>');
     this.emiter.emit('display');
     $(this.getNode()).find(".newDet").click(function(){
         if (self.availableDet.length === 0) return;
         self.drawSelectDet();
         self.drawButtonRequest();
         self.toggleSubmissionButtonState();
-    });    
+    });
 }
 
 dBox.prototype.drawButtonRequest = function(){
-    //draw button request + ppmBox and assign event for click and check 
+    //draw button request + ppmBox and assign event for click and check
     var self = this;
     this.PPMBoxTag = 'PPMBox_' + self.idNum;
     if( ($(".buttonRequest").length) || (this.modeEdition===true) ) return;
@@ -141,21 +141,40 @@ dBox.prototype.dataTransfert = function(data){
     $(self.getNode()).find(".buttonRefresh").click(function(){
         window.location.reload();
     });
-} 
+}
 
+dBox.prototype.mapper = function(opt) {
+    if (opt.hasOwnProperty('detergent')) {
+        for (var category in this.detergentRefLitt)
+            for (var deterDatum in this.detergentRefDict[category])
+                if (deterDatum.name === opt.detergent) return category;
+    }
+
+};
 
 dBox.prototype.display = function(jsonFile) {
     //this function browse the JSONFile and store his data in the variable dataDetergentFromJson.
-    //create the variable availableData 
+    //create the variable availableData
     if (this.drawn) return;
     var self = this;
     this.boxNumber = 0;
     this.availableDet = [];
-    this.detergentRefList = [];
+
+    this.detergentRefLitt = {};
     $.getJSON(jsonFile, function (jsonData) {
         self.dataDetergentFromJson = jsonData.data;
-        self.detergentRefList = self.dataDetergentFromJson.map(function(e){ return e.name; });
-        self.availableDet = self.detergentRefList.slice();
+        for (var detCategory in self.dataDetergentFromJson) {
+            self.detergentRefLitt[detCategory] = self.dataDetergentFromJson[detCategory].map(function(i){return i.name;});
+        }
+       /*
+        self.detergentRefList = self.dataDetergentFromJson.map(function(e){
+            var list = e.map(function(i){return i.name;});
+            return { "categoy" : e.name , "detergents" : list };
+        });
+        */
+        self.availableDet = JSON.parse(JSON.stringify(self.detergentRefLitt));
+
+       // return;
         // Initial component graphical state
         self.drawEmptySectionAndButton();
         self.draw = true;
@@ -163,39 +182,53 @@ dBox.prototype.display = function(jsonFile) {
 }
 
 
-dBox.prototype.addAvailable = function (detName) {
+dBox.prototype.addAvailable = function (detLitt) {
+    console.log("addAvailable");console.log(detLitt);
+
     //this function addAvailable (in the object availableDet) the detergent who is giving in argument
     var detExist = false;
-    this.availableDet.forEach(function(e){
-        if(e === detName) detExist = true; 
+
+    this.availableDet[detLitt.category].forEach(function(e){
+        if(e === detLitt.name) detExist = true;
     });
-    if(!detExist) this.availableDet.push(detName);
+    if(!detExist) this.availableDet[detLitt.category].push(detLitt.name);
+
+
 
     $(this.getNode()).find('select.selDetName')
-        .filter(function(){
+        .filter(function(){ // Filter selectboxes which lack the added det
             var ok = true;
             $(this).find('option').each(function(){
-                if ($(this).attr('value') === detName) ok = false;
+                if ($(this).attr('value') === detLitt.name) ok = false;
             });
             return ok;
-        }).append('<option value=' + detName + '>' + detName + '</option>');
-
+        }).each(function(){
+            if( $(this).find('option').filter(function(){return $(this).text() == detLitt.category; }).length  == 0 ) {
+                 $(this).append('<option disabled>' + detLitt.category + '</option> <option category=' + detLitt.category + ' value=' + detLitt.name + '>' + detLitt.name + '</option>');
+                 return;
+            }
+            $(this).find('option').filter(function(){ return $(this).text() == detLitt.category; })
+                    .after('<option category=' + detLitt.category + ' value=' + detLitt.name + '>' + detLitt.name + '</option>');
+        });
 }
 
 
-dBox.prototype.delAvailable = function (detName) {
+dBox.prototype.delAvailable = function (detLitt) {
+    console.log("delAvailable");console.log(detLitt);
     // Remove detergent name from buffer and from all displayed selection boxes
-    var m = this.availableDet.indexOf(detName);
+    var m = this.availableDet[detLitt.category].indexOf(detLitt.name);
     if (m === -1) return;
-    
-    this.availableDet.splice(m, 1); 
+
+    this.availableDet[detLitt.category].splice(m, 1);
 
     $(this.getNode()).find('select.selDetName option')
         .filter(function(i){
             if($(this).is(':selected')) return false;
-            return $(this).attr('value') === detName;
+            return $(this).attr('value') === detLitt.name;
         })
         .remove();
+    var self = this;
+    $(this.getNode()).find('select.selDetName option:disabled').filter(function(i) { var catName = $(this).text(); return self.availableDet[catName].length == 0;}).remove();
 }
 
 dBox.prototype.drawSelectDet = function() {
@@ -208,7 +241,7 @@ dBox.prototype.drawSelectDet = function() {
             .append(
             '<div id="' + boxID + '" class="input-group my-group">'
                 + '<div class="errordNumber">'
-                    + '<select class="selDetName selectpicker form-control" data-live-search="true"></select>'       
+                    + '<select class="selDetName selectpicker form-control" data-live-search="true"></select>'
                     +' <input type="number" class="form-control dNumber" placeholder="quantity">'
                     + '<span class="input-group-btn deleteDet">'
                         + '<button class="btn btn-default" type="submit">'
@@ -222,31 +255,46 @@ dBox.prototype.drawSelectDet = function() {
             )
             .find('.deleteDet').click(function(){
                 var detName = $(this).siblings('select').find('option:selected').text();
-                self.addAvailable(detName);
-                $(this).parent().remove();
+                var detCat = $(this).siblings('select').find('option:selected').attr('category');
+                self.addAvailable({name : detName, category : detCat });
+                $(this).parents().eq(1).remove();
                 self.toggleSubmissionButtonState();
             });
 
+    var defaultDet = null;
     $(self.getNode()).find('#' + boxID + ' .selDetName').each(function(){
         var elem = this;
+        for (var category in self.availableDet) {
+            if (self.availableDet[category].length == 0) continue;
+            $(elem).append('<option disabled>' + category + '</option>');
+            self.availableDet[category].forEach(function(e, i){
+                defaultDet = !defaultDet ? { 'name' : e, 'category' : category } : defaultDet;
+                $(elem).append('<option value=' + e +' category="' + category + '">' + e + '</option>');
+            });
+        }
+/*
         self.availableDet.forEach(function(e, i){
+            $(elem).append('<option disabled> titit toto tata</option>');
             $(elem).append('<option value=' + e+'>' + e + '</option>');
-        }); 
-        self.delAvailable(self.availableDet[0]);
-        var prevDetSelected;
+        });
+*/
+        self.delAvailable(defaultDet);
+        var prevDetSelected, prevCatSelected;
         $(elem).on('click',function(){
-            prevDetSelected = $(this).find('option:selected').text();         
-        })
+            prevDetSelected = $(this).find('option:selected').text();
+            prevCatSelected = $(this).find('option:selected').attr('category');
+    })
 
 
         $(elem).on('change',function(){
             var detSelected = $(this).find('option:selected').text();
-            self.delAvailable(detSelected);
-            self.addAvailable(prevDetSelected);
+            var catSelected = $(this).find('option:selected').attr('category');
+            self.delAvailable({ name : detSelected, category : catSelected });
+            self.addAvailable({ name : prevDetSelected, category : prevCatSelected});
         });
     });
 
-    $(self.getNode()).find("input.dNumber").on('click', 
+    $(self.getNode()).find("input.dNumber").on('click',
         function() {
             $(this).removeClass("error");
         });

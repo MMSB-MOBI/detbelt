@@ -1,4 +1,4 @@
-var SERVER_DOMAIN = ('http://127.0.0.1:3001'); // 3001
+var SERVER_DOMAIN = ('corona-dev.ibcp.fr'); // 3001
 var CLIENT_VERSION=0.1;
 //description of the client
 
@@ -13,7 +13,7 @@ var dBox = require('./web/js/dBox.js');
 var downloadBox = require('./web/js/downloadBox.js');
 require("./app.css");
 
-var jsonFile = SERVER_DOMAIN+"/assets/detergents.json";
+var jsonFile = "assets/detergents.json";
 var socket = io.connect(SERVER_DOMAIN);
 socket.on('connect', function(){
     console.log("connecté");
@@ -36,7 +36,7 @@ var createFooter = function (elem){
 $(function(){
     var self = this;
      cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
-     cpDetBox = dBox.new({root : "#main",idNum : 2}); 
+     cpDetBox = dBox.new({root : "#main",idNum : 2});
      cpDownloadBox = downloadBox.new({root : "#main", idNum : 3})
     createHeader("body .page-header");
     createFooter("body footer");
@@ -51,7 +51,7 @@ $(function(){
     });
 
     cpSubmitBox.display(jsonFile);
-    
+
 
     cpSubmitBox.on("ngl_ok",function(fileContent){
         self.pdbFile = fileContent;
@@ -93,7 +93,7 @@ $(function(){
         console.log("lance Edition");
         cpSubmitBox.removeOldCorona(detList);
     });
-    
+
     cpDownloadBox.on("clickDL", function(type){
         console.log("passe par app.js");
          var data = cpSubmitBox.getCoronaData();

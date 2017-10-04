@@ -12,7 +12,7 @@ pdbSubmit.prototype = Object.create(Core.prototype);
 pdbSubmit.prototype.constructor = pdbSubmit;
 
 pdbSubmit.prototype.drawControlBox = function () {
-    //function created checkbox and associated events for turn the protein  
+    //function created checkbox and associated events for turn the protein
     var self = this;
     var turnBoxTag = 'turnBox_' + self.idNum;
     $(this.getNode()).find(".pdbSubmitDiv").append('<div class="ctrlBox"></div>');
@@ -31,7 +31,7 @@ pdbSubmit.prototype.drawResultBox = function () {
     var resultDiv = $(self.getNode()).find(".pdbSubmitDiv .resultSummary")[0];
 
     $(resultDiv).append('<table class="table"><thead><tr><th colspan="2">Detergent Belt characteristics</th></tr></thead><tbody>'
-        + '<tr>' 
+        + '<tr>'
         + '<td>Half-height <span class="notEditableResults">' + sprintf("%2.1f", self.data.halfH) + ' &#8491</span></td>'
         + '<td>Volume <span class="editableResults">' + sprintf("%2f", self.data.volumeCorona) + ' &#8491<sup>3</sup></span></td>'
         + '</tr>'
@@ -54,7 +54,7 @@ pdbSubmit.prototype.drawResultBox = function () {
 
 pdbSubmit.prototype.setWait = function(status){
     //staus is loadON when submit a request to server and loadOFF after the canva is refresh in the fct nglRefresh
-    //if the request is loaded -> loader + remove prot + hide canva  
+    //if the request is loaded -> loader + remove prot + hide canva
     //if the request is finish -> canva visible + remove loader
     if(status === "loadON") {
         $(this.getNode()).find(".pdbSubmitDiv").append('<span class="loader">'
@@ -71,7 +71,7 @@ pdbSubmit.prototype.setWait = function(status){
 };
 
 pdbSubmit.prototype.display = function(jsonFile) {
-    //create the DOM 
+    //create the DOM
     //send jsonFile in argument to stock his color in object dataDetergentFromJson
     var self = this;
     this.divTag = 'div_'+this.idNum;
@@ -83,24 +83,29 @@ pdbSubmit.prototype.display = function(jsonFile) {
     this.emiter.emit('display'); //event for give at submitBox compenent the size col-xs-12
 
     $.getJSON(jsonFile, function (jsonData) {
-        self.dataDetergentFromJson = jsonData.data;
+        self.dataDetergentFromJson = [];
+        for (var category in jsonData.data) {
+            jsonData.data[category].forEach(function(d){
+                 self.dataDetergentFromJson.push(d);
+            });
+        }
     });
 
     var _drawButton = function (node) {
         //create a button, event for read a pdb file and manage the file error
         var inputTag = 'file_' + self.idNum;
-        
-        $(node).append('<input id="' + inputTag + '" type="file" class="file" data-show-preview="false">'); 
+
+        $(node).append('<input id="' + inputTag + '" type="file" class="file" data-show-preview="false">');
 
         var fileInput = document.querySelector('#' + inputTag); // recupération du fichier d'entrée
 
         fileInput.addEventListener('change', function() {
-            var reader = new FileReader();      
+            var reader = new FileReader();
             //var re = /^REMARK +1\/2 of bilayer thickness/;
 
             reader.addEventListener('load', function() {
                 var taille=fileInput.files[0].size;
-            
+
                 if (taille==0){
                     console.log("error : empty file");
                     alert("empty file");
@@ -112,7 +117,7 @@ pdbSubmit.prototype.display = function(jsonFile) {
                 }*/
                 else{
                     self.fileContent=reader.result;
-                    self.nglStart(fileInput.files[0]); 
+                    self.nglStart(fileInput.files[0]);
                     $("#"+inputTag).remove();
                     $("#"+self.divTag+" h1").remove();
                 }
@@ -142,8 +147,10 @@ pdbSubmit.prototype.nglStart = function(fileObject) {
     //function to create canva and print the protein containing in fileObject
     var self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
-    this.stage.loadFile(fileObject, { defaultRepresentation: true }) 
+    this.stage.loadFile(fileObject, { defaultRepresentation: true })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
+            o.setDefaultAssembly('');
+            o.autoView();
             self.nglStructureView_noBelt = o;
             if(self.nglStructureView_noBelt.structure.atomCount===0){
                 console.log("Le fichier n'est pas au format pdb");
@@ -168,8 +175,15 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     var blob = new Blob([this.pdbText],{ type:'text/plain' });
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
+            o.setDefaultAssembly('');
+            o.autoView();
             self.halfH = parseFloat(self.data.halfH);
             var basis = new NGL.Matrix4();
+            /* not functional yet : we tried to make a rotation of the view (z axis switched with y axis)
+            basis.set( 1, 0, 0, 0,
+                       0, 1, 0, 0,
+                       0, 0, 1, 0,
+                       0, 0, 0, 1 );*/
             self.stage.viewerControls.align(basis);
             self.nglStructureView_belt = o;
             self.beltRadius = parseFloat(self.data.beltRadius);
@@ -191,8 +205,8 @@ pdbSubmit.prototype.nglCorona = function() {
                 var vi = parseFloat(i.vol);
                 var v1= ni * vi;
                 self.createCylinder(self.volumeTOT,v1,i.color);
-            } 
-        }); 
+            }
+        });
     });
 }
 
@@ -221,7 +235,7 @@ pdbSubmit.prototype.nglEditionData = function(detList) {
                 var ni = parseFloat(e.qt);
                 var vi = parseFloat(i.vol);
                 self.volumeTOT += ni * vi;
-            } 
+            }
         });
     });
     this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
@@ -249,10 +263,10 @@ pdbSubmit.prototype.removeOldCorona = function(detList) {
 
 pdbSubmit.prototype.getCoronaData = function() {
     console.log("getCoronaData");
-    return { 
-            "halfH" : this.halfH, 
+    return {
+            "halfH" : this.halfH,
             "proteinRadius" : this.proteinRadius,
-            "ahs" : this.data.ahs, 
+            "ahs" : this.data.ahs,
             "volumeCorona" : this.volumeTOT,
             "beltRadius" : this.beltRadius,
             "detColor" : this.colorBelt
