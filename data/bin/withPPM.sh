@@ -24,7 +24,7 @@ SOURCEDIR=`pwd`
 mkdir $SOURCEDIR/results/
 mkdir $SOURCEDIR/resultsPPM/
 cd $WORKDIR
-cp $pdbFile ./$pdbUser # save the PDB file in the workdir
+perl -ne 'if (!($_ =~ /^HETATM/ && $_ !~ /DUM/)) {print;}' $pdbFile > ./$pdbUser # save the PDB file in the workdir, gettin rid of HETATM records
 
 
 ##### PPM #####

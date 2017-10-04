@@ -19,7 +19,7 @@ pdbUserOriented="${pdbName}out.pdb"
 SOURCEDIR=`pwd`
 mkdir $SOURCEDIR/results/
 cd $WORKDIR
-cp $pdbFile ./$pdbUserOriented # save the PDB file in the workdir
+perl -ne 'if (!($_ =~ /^HETATM/ && $_ !~ /DUM/)) {print;}' $pdbFile > ./$pdbUserOriented # save the PDB file in the workdir, gettin rid of HETATM records
 
 
 ##### VOLUME #####
