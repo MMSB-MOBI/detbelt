@@ -6,8 +6,9 @@
 #     ***** README *****
 #     ******************
 #     * HOW TO USE IT :
-#     * Drag and drop this file into your PyMOL window.
+#     * Simply double click onto this file.
 #     * You can modify the values in the "VARIABLES" section of this script.
+#     * WARNING : don't forget to enter the correct path of your PDB file !
 
 #####################
 ##### VARIABLES #####
@@ -15,7 +16,12 @@
 PDBfile = """./file.pdb"""
 halfThickness = 15.2
 beltRadius = 42.30
-color = [0.3,0.3,0.3]
+color = [0.3, 0.3, 0.3] # grey = neutral
+#color = [0.0, 1.0, 0.0] # green = maltoside
+#color = [0.25, 1.0, 0.75] # cyan = charged
+#color = [1.0, 1.0, 0.0] # yellow = glucoside
+#color = [1.0, 0.6, 0.6] # pink = neopentyl-glycol
+#color = [255, 0.0, 255] # fuchsia = cholesterol derivative
 
 ###############################
 ##### PREPARE ENVIRONMENT #####
