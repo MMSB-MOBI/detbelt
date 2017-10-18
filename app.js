@@ -1,5 +1,5 @@
-var SERVER_DOMAIN = ('corona-dev.ibcp.fr'); // 3001
-var CLIENT_VERSION=0.2;
+var SERVER_DOMAIN = ('detbelt-dev.ibcp.fr'); // 3001
+var CLIENT_VERSION=0.9;
 //description of the client
 
 window.$ = window.jQuery = require("jquery");
