@@ -1,3 +1,9 @@
+/*Temp patch for detergeant abbreviations*/
+span.abbreviations {
+    padding-top: 0.75em;
+
+}
+
 div.DeterSubmitDiv select:not([multiple]) {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -16,7 +22,7 @@ div.DeterSubmitDiv hr {
 
 div.DeterSubmitDiv h3{
 	margin-top: 0.5em;
-} 
+}
 
 div.DeterSubmitDiv {
 	background-color: whitesmoke;

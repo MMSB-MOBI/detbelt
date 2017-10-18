@@ -13,12 +13,18 @@ downloadBox.prototype.display = function() {
     var self = this;
     console.log("display download box");
     var listHelp = '<div class="downloadTooltip"><ul class="fa-ul">'
-                    +    '<li> <i class="fa fa-2x fa-li fa-pinterest-p">   </i> PDB coordinates file</li>'
+                    +    '<li class="pdbLi"> PDB coordinates file</li>'
                     +    '<li> <i class="fa fa-2x fa-li fa-file-code-o">   </i> PYMOL script</li>'
                     +    '<li> <i class="fa fa-2x fa-li fa-file-text-o"></i> File containing the corona caracteristics</li>'
                     +    '<li> <i class="fa fa-2x fa-li fa-file-archive-o"></i> Zip archive containing PDB and PYMOL files</li>'
                 +"</ul></div>";
-
+    listHelp = '<div class="downloadTooltip"><ul class="fa-ul">'
+                    +    '<li><span style="color:steelblue;margin-left: -1.5em;font-weight:500;padding-right:1.5em;">PDB</span><span class="helpLiSpan"> coordinates file</span></li>'
+                    +    '<li><span style="color:steelblue;margin-left: -1.5em;font-weight:500">PyMOL</span><span class="helpLiSpan"> visualization PYMOL script</span></li>'
+                    +    '<li><i class="fa fa-li fa-file-text-o" style="color:steelblue"></i> <span class="helpLiSpan" style="padding-left:2.2em;">File containing the belt caracteristics</span></li>'
+                    +    '<li><i class="fa fa-li fa-file-archive-o" style="color:steelblue"></i><span class="helpLiSpan" style="padding-left:2.2em;">PDB and PYMOL files ZIP archive</span></li>'
+                    +    '</ul>'
+                    + '</div>';
 
     var pdbHelp = "pdb file";
     var scriptHelp = "pymol script";
@@ -34,7 +40,7 @@ downloadBox.prototype.display = function() {
                     +'<span class="pull-right help-icon" data-toggle="tooltip"><i class="fa fa-question fa-2x" aria-hidden="true"></i></span>'
                 +'</div>'
                 +'<div class="buttonDownloadDiv btn-group">'
-                +'<div class="btn btn-primary btnLink btnPdb" style="height: 3em;padding-top: 0.7em;"> <img width="45px" src="assets/img/pdb_alt.png"></div>'
+                +'<div class="btn btn-primary btnLink btnPdb" style="height: 3em;padding-top: 0.7em;"> <img width="45px" src="img/pdb_alt.png"></div>'
                 +'<div class="btn btn-primary btnLink btnScript" style="height: 3em;padding-top: 0.7em;">PyMOL</div>'
                 +'<div class="btn btn-primary btnLink btnData" style="width: 5.5em;"> <i class="fa fa-2x fa-file-o"></i></div>'
                 +'<div class="btn btn-primary btnLink btnZip" style="width: 5.5em;"> <i class="fa fa-2x fa-folder-open-o"></i></div>'

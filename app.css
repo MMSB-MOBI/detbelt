@@ -4,3 +4,10 @@
 @import url("web/css/pdbSubmit.css");
 @import url("web/css/dBox.css");
 @import url("web/css/downloadBox.css");
+
+@font-face {
+    font-family: americanTW;
+    src: url('fonts/americanTypeWriterRegular.ttf');
+}
+
+

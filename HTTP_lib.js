@@ -65,9 +65,14 @@ var setClientRoute = function(app, downloadRoute) {
     app.use(bodyParser.urlencoded({limit : '5mb', extended : false}));
     app.use('/bundle', express.static(__dirname + '/js'));
     app.use('/assets', express.static(__dirname + '/static'));
+    app.use('/fonts', express.static(__dirname + '/static/fonts'));
+    app.use('/img', express.static(__dirname + '/static/img'));
     app.use('/ngl', express.static(__dirname + '/web/js/ngl-master/dist'));
     app.use('/resultSample', express.static(__dirname + '/data/resultSample/'));
     app.use('/download', express.static(downloadRoute));
+    app.get('/tutorial', function(req, res) {
+             res.sendFile(__dirname + '/static/tutorial.html');
+    });
 }
 
 
@@ -104,6 +109,9 @@ var httpStart = function (worker, downloader, downloadRoute) {
             .on('jobCompletion', function (jsonRes, jobObject) {
                 results = jsonRes;
                 socket.emit('results', results);
+            })
+            .on('stderrContent', function (err) {
+                socket.emit('stderrContent');
             });
         })
         .on("downloadPymol", function (newData) {

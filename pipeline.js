@@ -228,21 +228,25 @@ var compute = function (data) {
     j.on('completed', function (stdout, stderr, jobObject){
         if (stderr) {
             stderr.on('data', function (buf){
+                var err = buf.toString()
                 console.log("stderr content:");
-                console.log(buf.toString());
+                console.log(err);
+                emitter.emit('stderrContent', err);
+            });
+        } else {
+            var results = '';
+            stdout
+            .on('data', function (buf){
+                results += buf.toString();
+            })
+            .on('end', function (){
+                var jsonRes = JSON.parse(results);
+                console.log(jsonRes);
+                jsonRes = readResults(jsonRes.resultsPath);
+                console.log('jobCompletion');
+                emitter.emit('jobCompletion', jsonRes, jobObject);
             });
         }
-        var results = '';
-        stdout
-        .on('data', function (buf){
-            results += buf.toString();
-        })
-        .on('end', function (){
-            var jsonRes = JSON.parse(results);
-            jsonRes = readResults(jsonRes.resultsPath);
-            console.log('jobCompletion');
-            emitter.emit('jobCompletion', jsonRes, jobObject);
-        });
     })
     .on('error',function (err, j){
         console.log("job " + j.id + " : " + err);

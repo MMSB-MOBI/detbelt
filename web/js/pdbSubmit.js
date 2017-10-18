@@ -11,10 +11,22 @@ var pdbSubmit = function(opt) {
 pdbSubmit.prototype = Object.create(Core.prototype);
 pdbSubmit.prototype.constructor = pdbSubmit;
 
+pdbSubmit.prototype.error = function (msg){
+    var h = $(this.getNode()).find(".pdbSubmitDiv").outerHeight();
+    var w = $(this.getNode()).find(".pdbSubmitDiv").outerWidth();
+    console.log(h + ' ' + w);
+    $(this.getNode()).find(".pdbSubmitDiv").empty();
+    $(this.getNode()).find(".pdbSubmitDiv").outerHeight(h);
+    $(this.getNode()).find(".pdbSubmitDiv").outerWidth(w);
+    $(this.getNode()).find(".pdbSubmitDiv").append('<div class="alert alert-danger pdbError">'
+            + '<span><i class="fa fa-2x fa-exclamation-circle" aria-hidden="true"></i></span> The server was unable to process your structure.'
+            + '</div>');
+}
 pdbSubmit.prototype.drawControlBox = function () {
     //function created checkbox and associated events for turn the protein
     var self = this;
     var turnBoxTag = 'turnBox_' + self.idNum;
+
     $(this.getNode()).find(".pdbSubmitDiv").append('<div class="ctrlBox"></div>');
     var ctrlDiv = $(this.getNode()).find(".pdbSubmitDiv .ctrlBox")[0];
     $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" id="' + turnBoxTag + '" >Set molecule spin on/off</label></div>');

@@ -17,7 +17,7 @@ div.DownloadDiv span.titleH3{
     padding-left: 7px;
     padding-right: 5px;
     font-weight: 500;
-} 
+}
 
 div.DownloadDiv div.buttonDownloadDiv {
 	padding-left: 20px;
@@ -37,14 +37,14 @@ div.DownloadDiv button.btnLink{
 	margin-left: 2em;
 }
 div.DownloadDiv div.downloadTooltip {
-	min-width: 200px;
-	padding-top: 14px;
-	padding-left: 20px;
+	/*min-width: 200px;
+	padding-top: 14px;*/
+	padding-left: 5px;
 }
 
 div.DowloadDiv span.help-icon{
-	margin-top: 4px; 
-	margin-right: 10px;
+/*	margin-top: 4px;
+	margin-right: 10px;*/
 }
 
 div.DownloadDiv .help-icon + .tooltip {
@@ -99,5 +99,10 @@ div.DownloadDiv button.btnLink{
 
 div.DownloadDiv div.liensDownload{
 	display:none;
+}
+
+
+span.helpLiSpan {
+font-weight:100;
 }
 

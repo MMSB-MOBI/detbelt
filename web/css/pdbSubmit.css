@@ -72,3 +72,16 @@ div.pdbSubmitDiv div.resultSummary table thead th {
 div.pdbSubmitDiv div.resultSummary table tbody td {
     padding-left: 5em;
 }
+
+div.pdbSubmitDiv div.pdbError {
+    top: 25%;
+    position: absolute;
+    width: 90%;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight:300;
+}
+
+div.pdbSubmitDiv div.pdbError i {
+    vertical-align: middle;
+}

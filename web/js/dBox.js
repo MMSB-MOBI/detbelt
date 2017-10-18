@@ -25,12 +25,13 @@ dBox.prototype.animationBox = function(){
     console.log("bouge cette boite");
     $(this.getNode()).animate({
         //position: absolute,
-        top: "130",
+        top: "100",
     }, 1500, function() {
-        console.dir(self);
+        //console.dir(self);
         self.emiter.emit("moved");
         console.log("boite a terminé de bouger");
-        $(self.getNode()).offset({ top : 320 });
+        $(self.getNode()).css('top', 0);
+       // $(self.getNode()).offset({ top : 320 });
     });
 }
 
@@ -70,14 +71,23 @@ dBox.prototype.drawEmptySectionAndButton = function() {
                 + '<div class="buttonNew"></div>'
             + '</div>');
 
-    $(this.getNode()).find(".buttonNew").append('<button type="button" class="btn btn-primary btn-sm newDet">Add a new detergent</button>');
+    $(this.getNode()).find(".buttonNew").append('<button type="button" class="btn btn-primary btn-sm newDet">Add a new detergent</button><span class="abbreviations pull-right"><a href="assets/abbreviations.pdf" target="_blank">abbreviations</a></span>');
     this.emiter.emit('display');
     $(this.getNode()).find(".newDet").click(function(){
-        if (self.availableDet.length === 0) return;
+        if (self.availableDetNumber() == 0) return;
+
         self.drawSelectDet();
         self.drawButtonRequest();
         self.toggleSubmissionButtonState();
     });
+}
+
+dBox.prototype.availableDetNumber = function () {
+    var l = 0;
+    for (var k in this.availableDet) {
+        l += this.availableDet[k].length;
+    }
+    return l;
 }
 
 dBox.prototype.drawButtonRequest = function(){
@@ -159,9 +169,10 @@ dBox.prototype.display = function(jsonFile) {
     var self = this;
     this.boxNumber = 0;
     this.availableDet = [];
-
     this.detergentRefLitt = {};
     $.getJSON(jsonFile, function (jsonData) {
+
+
         self.dataDetergentFromJson = jsonData.data;
         for (var detCategory in self.dataDetergentFromJson) {
             self.detergentRefLitt[detCategory] = self.dataDetergentFromJson[detCategory].map(function(i){return i.name;});
@@ -178,12 +189,16 @@ dBox.prototype.display = function(jsonFile) {
         // Initial component graphical state
         self.drawEmptySectionAndButton();
         self.draw = true;
-    });
+    })
+    .fail(function() {
+        console.log( "error loading detergent file at " + jsonFile );
+  });
 }
 
 
 dBox.prototype.addAvailable = function (detLitt) {
-    console.log("addAvailable");console.log(detLitt);
+    console.log("addAvailable");
+    console.log(detLitt);
 
     //this function addAvailable (in the object availableDet) the detergent who is giving in argument
     var detExist = false;
@@ -203,24 +218,68 @@ dBox.prototype.addAvailable = function (detLitt) {
             });
             return ok;
         }).each(function(){
+            console.log('Reinjecting in a select');
             if( $(this).find('option').filter(function(){return $(this).text() == detLitt.category; }).length  == 0 ) {
-                 $(this).append('<option disabled>' + detLitt.category + '</option> <option category=' + detLitt.category + ' value=' + detLitt.name + '>' + detLitt.name + '</option>');
+                console.log("writing " + detLitt.category);
+                 $(this).append('<option disabled>' + detLitt.category + '</option>'
+                              + '<option category="' + detLitt.category + '" value=' + detLitt.name + '>' + detLitt.name + '</option>');
                  return;
             }
+            console.log("Appending");
             $(this).find('option').filter(function(){ return $(this).text() == detLitt.category; })
                     .after('<option category=' + detLitt.category + ' value=' + detLitt.name + '>' + detLitt.name + '</option>');
         });
 }
 
 
-dBox.prototype.delAvailable = function (detLitt) {
-    console.log("delAvailable");console.log(detLitt);
-    // Remove detergent name from buffer and from all displayed selection boxes
+dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
+    var self = this;
+    console.log("delAvailable");
+    console.log(detLitt);
+
+    // Remove detergent name from buffer
     var m = this.availableDet[detLitt.category].indexOf(detLitt.name);
     if (m === -1) return;
-
     this.availableDet[detLitt.category].splice(m, 1);
 
+    // List all category of currently selected detergents
+    var currSelCatList = $(this.getNode()).find('select.selDetName option:selected').map(function(){
+        return $(this).attr("category"); })
+            .get()
+            .filter( function(value, index, self) {return self.indexOf(value) === index;});
+
+        console.log("-->");  console.dir(currSelCatList);
+
+     var currSelCatName = detLitt.category;
+
+
+// detLitt.name .category
+// Foreach box remove detergeant mention
+//             Also removes its category mention if the category is empty
+//             AND if one of its detergent is not selected in current box
+    $(this.getNode()).find('select.selDetName')
+                     .each(function(){
+                        var sCategory = $(this).find('option:selected').attr("category");
+                        // Treating "category" options
+                        $(this).find('option:disabled').filter( function(i){
+                            var catName = $(this).text();
+                            if (sCategoryPrev)
+                                return self.availableDet[catName].length == 0 && catName !== sCategory && catName !== sCategoryPrev;
+                            return self.availableDet[catName].length == 0 && catName !== sCategory;
+                        }).remove();
+
+                        // Treating "detergent" options
+                        $(this).find('option:not(:disabled)').filter(function(i){
+                                if($(this).is(':selected')) return false;
+                            /*console.log($(this));
+                            console.log($(this).attr('value') + " === " + detLitt.name);
+                            console.log($(this).attr('value') === detLitt.name);*/
+                             return $(this).attr('value') === detLitt.name;
+                        }).remove();
+                     });
+
+/*
+    console.log("Trying to remove " + detLitt.name);
     $(this.getNode()).find('select.selDetName option')
         .filter(function(i){
             if($(this).is(':selected')) return false;
@@ -228,8 +287,16 @@ dBox.prototype.delAvailable = function (detLitt) {
         })
         .remove();
     var self = this;
-    $(this.getNode()).find('select.selDetName option:disabled').filter(function(i) { var catName = $(this).text(); return self.availableDet[catName].length == 0;}).remove();
-}
+    //var currSelCatName = $(this.getNode()).find('select.selDetName option:selected').attr("category");
+
+
+    $(this.getNode()).find('select.selDetName option:disabled').filter(function(i) {
+        var catName = $(this).text();
+        return self.availableDet[catName].length == 0 && catName !== currSelCatName;}
+        ).remove();
+        */
+    }
+
 
 dBox.prototype.drawSelectDet = function() {
     //draw an selectDet box from availableDet
@@ -256,6 +323,7 @@ dBox.prototype.drawSelectDet = function() {
             .find('.deleteDet').click(function(){
                 var detName = $(this).siblings('select').find('option:selected').text();
                 var detCat = $(this).siblings('select').find('option:selected').attr('category');
+                console.log("Adding " + detName + ' , ' + detCat);
                 self.addAvailable({name : detName, category : detCat });
                 $(this).parents().eq(1).remove();
                 self.toggleSubmissionButtonState();
@@ -265,8 +333,10 @@ dBox.prototype.drawSelectDet = function() {
     $(self.getNode()).find('#' + boxID + ' .selDetName').each(function(){
         var elem = this;
         for (var category in self.availableDet) {
+            //$(elem).append('<option disabled>Choose a ligand</option>');
             if (self.availableDet[category].length == 0) continue;
             $(elem).append('<option disabled>' + category + '</option>');
+
             self.availableDet[category].forEach(function(e, i){
                 defaultDet = !defaultDet ? { 'name' : e, 'category' : category } : defaultDet;
                 $(elem).append('<option value=' + e +' category="' + category + '">' + e + '</option>');
@@ -278,7 +348,7 @@ dBox.prototype.drawSelectDet = function() {
             $(elem).append('<option value=' + e+'>' + e + '</option>');
         });
 */
-        self.delAvailable(defaultDet);
+        self.delAvailable(defaultDet, null);
         var prevDetSelected, prevCatSelected;
         $(elem).on('click',function(){
             prevDetSelected = $(this).find('option:selected').text();
@@ -289,8 +359,17 @@ dBox.prototype.drawSelectDet = function() {
         $(elem).on('change',function(){
             var detSelected = $(this).find('option:selected').text();
             var catSelected = $(this).find('option:selected').attr('category');
-            self.delAvailable({ name : detSelected, category : catSelected });
+
+            console.log("Changing From");
+            console.log(prevDetSelected + " " + prevCatSelected);
+            console.log("To");
+            console.log(detSelected + " " + catSelected);
+
+            self.delAvailable({ name : detSelected, category : catSelected }, prevCatSelected);
+            //return;
+            //return;
             self.addAvailable({ name : prevDetSelected, category : prevCatSelected});
+            console.log("fixed");
         });
     });
 

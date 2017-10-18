@@ -86,6 +86,10 @@ gulp.task('front-end-emulate', function (cb) {
   */
 });
 
+gulp.task("back-end-start", function(){
+	spawn('node',  ['index.js', '--conf', 'data/template/coronaServer.conf'], { stdio: 'inherit' })
+})
+
 gulp.task("compile", ["watch","js"]);
-//gulp.task("default", []);
+gulp.task("default", ["watch","js", "back-end-start"]);
 gulp.task("front-end", ["watch", "js", "front-end-emulate"]);

@@ -1,0 +1,50 @@
+body {
+    /*background-image:url(img/detBelt.png);*/
+    background-color: rgba(160, 160, 147, 1);
+    padding-left: 10%;
+    padding-right: 10%;
+}
+img.icon{
+    position: absolute;
+    width: 1.5em;
+    left: 25%;
+}
+div.tutorialHead {
+    font-size: 6em;
+    text-align: center;
+    padding-bottom: 0.5em;
+    padding-top: 0.25em;
+}
+span.tutorialSpan {
+    font-family: Verdana;
+    font-size: 2em;
+    padding-right: 0.5em;
+}
+
+div.thumbnail {
+    /*width : 50%;*/
+    background: none;
+}
+div.caption {
+    margin-top: 0.2em;
+    background-color: rgba(196, 196, 187, 1);
+}
+div.tutorialPara {
+/*     */
+    margin-bottom: 1em;
+    border-radius: 4px;
+    padding: 1em;
+    background-color: rgba(196, 196, 187, 1);
+}
+a.tutorialCite {
+    font-family: Monaco;
+    font-size: 0.9em;
+    font-weight: 100;
+    cursor: pointer;
+}
+div.tutorialCapt {
+    padding: 1.5em;
+    border-radius: 4px;
+    margin-bottom: 0.5em;
+    text-align: center;
+}
