@@ -24,20 +24,20 @@ var createHeader = function (elem) {
 
     $(elem).append('<div class="welcomeHead"><img class="icon" src="img/detBelt.png"/>Welcome to the Det.Belt Server </div>'
             + '<div class="tutorial"><a href="tutorial" target="_blank"><span>Tutorial</span><i class="fa-2x fa fa-graduation-cap"/></a></div>'
-            + '<div class="headContent">The Det.Belt server allows you to have a broad idea of the detergent belt around your membrane protein.'
+            + '<div class="headContent">The Det.Belt server allows you to have a broad idea of the detergent belt around your membrane protein. '
             + 'The detergent is represented as a transparent hollow cylinder around the hydrophobic region of the protein. '
             + 'This approximation is particularly fitted to biochemical studies to give an overall idea of what is expected '
-            + 'around your membrane protein of interest.'
+            + 'around your membrane protein of interest. '
             + 'The calculation of the detergent belt is taking place within your web browser, which allows you to test and '
-            + 'try the size of the belt with different detergents very rapidly, and to explore different combination of detergents'+
-            + ' (that will be represented as stacked histograms). Metrics of the detergent belt are output together with Pymol scripts'
-            + 'and the output PDB file so that you can perform high quality figures for publication.'
+            + 'try the size of the belt with different detergents very rapidly, and to explore different combination of detergents'
+            + ' (that will be represented as stacked histograms). Metrics of the detergent belt are output together with Pymol scripts '
+            + 'and the output PDB file so that you can perform high quality figures for publication. <br/>'
             /*
             + 'To help gage how your detergent belt matches already published data, a plot of the '
             + 'volume_occupied_by_the_detergent=f(hydrophobic area) is created, and your query dynamically appears on the graph.'
             */
             + 'This tool is under development and we want it to be useful to the community. If you think of a useful feature, '
-            + 'please email us and we will do our best to incorporate it into the pipeline.'
+            + 'please email us and we will do our best to incorporate it into the pipeline. '
             + 'We welcome your feedback and bug reports at <a href="mailto:contact-detbelt@ibcp.fr">contact-detbelt@ibcp.fr</a>.'
             + '<div class="disclaimer"><ul class="fa-ul">'
             + '<li><i class="fa-li fa fa fa-info-circle"></i>Det.Belt server will remove the heteroatoms of your pdb file</li>'
