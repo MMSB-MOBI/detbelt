@@ -87,10 +87,16 @@ pdbSubmit.prototype.display = function(jsonFile) {
     //send jsonFile in argument to stock his color in object dataDetergentFromJson
     var self = this;
     this.divTag = 'div_'+this.idNum;
-    $(this.getNode()).append('<div class="pdbSubmitDiv" id="'+this.divTag+'">'
+    $(this.getNode()).append('<div class="pdbSubmitDiv row" id="'+this.divTag+'">'
+            + '<div class="searchBlock col-md-6">'
+            + '<h3>Enter a PDB id or a keyword</h3>'
+            + '<advanced-searchbar  target_id="id"></advanced-searchbar>'
+            + '</div>'
+            + '<div class="fileBlock col-md-6">'
             + '<h3>Enter your PDB file</h3>'
             + '<div class="ngl_canva" id="ngl_canva_'+self.idNum+'"> </div>'
             + '<div id="insertFile"> </div>'
+            + '</div>'
             + '</div>');
     this.emiter.emit('display'); //event for give at submitBox compenent the size col-xs-12
 
@@ -112,6 +118,7 @@ pdbSubmit.prototype.display = function(jsonFile) {
         var fileInput = document.querySelector('#' + inputTag); // recupération du fichier d'entrée
 
         fileInput.addEventListener('change', function() {
+
             var reader = new FileReader();
             //var re = /^REMARK +1\/2 of bilayer thickness/;
 
@@ -128,10 +135,17 @@ pdbSubmit.prototype.display = function(jsonFile) {
                     console.log("le fichier pdb doit commencer par une ligne REMARK 1/2 of bilayer thickness")
                 }*/
                 else{
+                    //console.log("azer")
                     self.fileContent=reader.result;
-                    self.nglStart(fileInput.files[0]);
-                    $("#"+inputTag).remove();
-                    $("#"+self.divTag+" h1").remove();
+                    //console.log(typeof(self.fileContent));
+                    let to_show = {"fileObject": fileInput.files[0]}
+                    //console.log(typeof(fileInput.files[0]))
+                    self.showProt(to_show);
+                    //console.log($("#"+inputTag))
+                    //$("#"+inputTag).remove();           // in a function
+                    //console.log($("#"+self.divTag+" h1"))
+                    //$("#"+self.divTag+" h1").remove();  // is it usefull ? I can't find where it is in the DOM
+
                 }
             });
 
@@ -159,17 +173,23 @@ pdbSubmit.prototype.nglStart = function(fileObject) {
     //function to create canva and print the protein containing in fileObject
     var self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
+    //fileObject = "pdb/4lxj.pdb"
+    //fileObject = "http://files.rcsb.org/download/5IOS.cif"
+    //console.log(fileObject)
+
     this.stage.loadFile(fileObject, { defaultRepresentation: true })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
             o.setDefaultAssembly('');
             o.autoView();
             self.nglStructureView_noBelt = o;
             if(self.nglStructureView_noBelt.structure.atomCount===0){
-                console.log("Le fichier n'est pas au format pdb");
+                console.log("This file is not a pdb file");
             }
             else{
                 self.emiter.emit('ngl_ok',self.fileContent);
-                $('h3').remove();
+                //console.log("ngl_ok")
+                console.log(o)
+                $('h3').remove();                                               
                 $(self.getNode()).find(".ngl_canva").addClass("display");
                 self.stage.handleResize();
             }
@@ -284,6 +304,30 @@ pdbSubmit.prototype.getCoronaData = function() {
             "detColor" : this.colorBelt
         };
 };
+
+pdbSubmit.prototype.showProt = function(opt){
+    if(opt.hasOwnProperty('fileObject')){
+        this.nglStart(opt.fileObject);  // in a function
+        $(this.getNode()).find('input.file').remove()
+        $(this.getNode()).find('div.searchBlock').remove()
+        $(this.getNode()).find('div.fileBlock').removeClass('col-md-6')
+
+    }
+    else if (opt.hasOwnProperty('url')){
+        //getFileContent
+        this.fileContent = opt.fileContent;
+        this.nglStart(opt.url);
+        $(this.getNode()).find('input.file').remove()
+        $(this.getNode()).find('div.searchBlock').remove()
+        $(this.getNode()).find('div.fileBlock').removeClass('col-md-6')
+
+    }
+    else{
+        alert("can't do anything")
+    }
+
+}
+
 
 module.exports = {
     new : function (opt) {

@@ -60,7 +60,7 @@ dBox.prototype.validationAndListDet = function(){
     return validateField;
 }
 
-dBox.prototype.drawEmptySectionAndButton = function() {
+dBox.prototype.drawEmptySectionAndButton = function(dbDetAvailable) {
     //create the DOM of deterBox
     var self = this;
     $(this.getNode()).
@@ -73,10 +73,10 @@ dBox.prototype.drawEmptySectionAndButton = function() {
 
     $(this.getNode()).find(".buttonNew").append('<button type="button" class="btn btn-primary btn-sm newDet">Add a new detergent</button><span class="abbreviations pull-right"><a href="assets/abbreviations.pdf" target="_blank">abbreviations</a></span>');
     this.emiter.emit('display');
-    $(this.getNode()).find(".newDet").click(function(){
+    $(this.getNode()).find(".newDet").click(function(){         // if we click on the newDet button
         if (self.availableDetNumber() == 0) return;
 
-        self.drawSelectDet();
+        self.drawSelectDet(dbDetAvailable);
         self.drawButtonRequest();
         self.toggleSubmissionButtonState();
     });
@@ -108,7 +108,7 @@ dBox.prototype.drawButtonRequest = function(){
 
     $(this.getNode()).find(".buttonRequest").click(function(event){
         if ( $(self.getNode()).find('select').length == 0 ) return;
-        var validQt = self.validationAndListDet();
+        var validQt = self.validationAndListDet();                      // detergent quantity
         if (!validQt) return false;
 
         if(document.getElementById(self.PPMBoxTag).checked){ self.requestPPM = false }
@@ -127,7 +127,7 @@ dBox.prototype.dataTransfert = function(data){
     //when the server send the reponse send event result and draw buttonEdition and buttonRefresh
     //data is the var containing the reponse of the server
     var self = this;
-    console.log("donnees corona transferes : " );
+    console.log("données corona transférées : " );
     console.dir(data.data);
     var pdbText = data.fileContent;
     this.coronaData = data.data;
@@ -162,7 +162,7 @@ dBox.prototype.mapper = function(opt) {
 
 };
 
-dBox.prototype.display = function(jsonFile) {
+dBox.prototype.display = function(jsonFile,dbDetAvailable) {
     //this function browse the JSONFile and store his data in the variable dataDetergentFromJson.
     //create the variable availableData
     if (this.drawn) return;
@@ -184,10 +184,10 @@ dBox.prototype.display = function(jsonFile) {
         });
         */
         self.availableDet = JSON.parse(JSON.stringify(self.detergentRefLitt));
-
        // return;
         // Initial component graphical state
-        self.drawEmptySectionAndButton();
+
+        self.drawEmptySectionAndButton(dbDetAvailable);
         self.draw = true;
     })
     .fail(function() {
@@ -298,7 +298,7 @@ dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
     }
 
 
-dBox.prototype.drawSelectDet = function() {
+dBox.prototype.drawSelectDet = function(dbDetAvailable) {
     //draw an selectDet box from availableDet
     var self = this;
     var boxID = 'divSelectDet_' + this.boxNumber;
@@ -307,14 +307,17 @@ dBox.prototype.drawSelectDet = function() {
     $(self.getNode()).find(".enterDet")
             .append(
             '<div id="' + boxID + '" class="input-group my-group">'
+                +'<button class="btn btn-default infos" type="submit">'
+                + '<i class="fa fa-info"></i>'
+                +'</button>'
                 + '<div class="errordNumber">'
                     + '<select class="selDetName selectpicker form-control" data-live-search="true"></select>'
                     +' <input type="number" class="form-control dNumber" placeholder="quantity">'
                     + '<span class="input-group-btn deleteDet">'
                         + '<button class="btn btn-default" type="submit">'
-                        + '<span class="fa-stack"><i class="fa fa-circle-o fa-stack-2x"></i>'
-                            + '<i class="fa fa-remove fa-stack-1x"></i>'
-                        + '</span>'
+                            + '<span class="fa-stack"><i class="fa fa-circle-o fa-stack-2x"></i>'
+                                + '<i class="fa fa-remove fa-stack-1x"></i>'
+                            + '</span>'
                         + '</button>'
                     +'</span>'
                 +'</div>'
@@ -328,6 +331,18 @@ dBox.prototype.drawSelectDet = function() {
                 $(this).parents().eq(1).remove();
                 self.toggleSubmissionButtonState();
             });
+        $(self.getNode()).find(".enterDet").find('#'+ boxID +' .infos').click(function(){
+                //console.log($(this).next().find('select')[0]["value"])
+                if($("advanced-sheet-handler").length === 0){
+                    self.emiter.emit("askInfos",$(this).next().find('select')[0]["value"])
+                    $(self.getNode()).append("<advanced-sheet-handler nglview></advanced-sheet-handler>")
+                }
+                else{
+                    self.emiter.emit("askInfos",$(this).next().find('select')[0]["value"])
+                }
+                
+            });
+
 
     var defaultDet = null;
     $(self.getNode()).find('#' + boxID + ' .selDetName').each(function(){
@@ -336,10 +351,12 @@ dBox.prototype.drawSelectDet = function() {
             //$(elem).append('<option disabled>Choose a ligand</option>');
             if (self.availableDet[category].length == 0) continue;
             $(elem).append('<option disabled>' + category + '</option>');
-
             self.availableDet[category].forEach(function(e, i){
-                defaultDet = !defaultDet ? { 'name' : e, 'category' : category } : defaultDet;
-                $(elem).append('<option value=' + e +' category="' + category + '">' + e + '</option>');
+                if(dbDetAvailable.includes(e)){
+                    defaultDet = !defaultDet ? { 'name' : e, 'category' : category } : defaultDet;
+                    $(elem).append('<option value=' + e +' category="' + category + '">' + e + '</option>');                    
+                }
+
             });
         }
 /*

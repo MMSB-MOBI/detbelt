@@ -82,3 +82,16 @@ div.DeterSubmitDiv div.ppmCheckBoxDiv {
 div.DeterSubmitDiv button.buttonRefresh{
 	margin-left: 1em;
 }
+
+div.DeterSubmitDiv div.enterDet div.input-group {
+	padding-bottom: 2px;
+	display: inline-flex;
+}
+
+div.DeterSubmitDiv div.enterDet div.input-group button.infos{
+	border-radius: 20px 0px 0px 20px;
+}
+
+div.DeterSubmitDiv div.enterDet div.input-group button.infos i.fa-info{
+	margin-right: -4px
+}

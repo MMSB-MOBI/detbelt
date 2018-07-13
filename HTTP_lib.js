@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-
+var {spawn} = require('child_process');
 var events = require ('events');
 var fs = require('fs');
 var bodyParser = require('body-parser');
@@ -73,6 +73,8 @@ var setClientRoute = function(app, downloadRoute) {
     app.get('/tutorial', function(req, res) {
              res.sendFile(__dirname + '/static/tutorial.html');
     });
+    app.use('/modules', express.static(__dirname + '/node_modules'));
+    app.use('/pdb', express.static(__dirname + '/static/pdb'));
 }
 
 
@@ -94,6 +96,66 @@ var httpStart = function (worker, downloader, downloadRoute) {
         res.sendFile(__dirname+'/web/html/template.html');
     });
 
+    app.get('/apiWhite/:request/:opt?',function(req, res){
+        let chunkRes = '';
+        let chunkError = '';
+        let url = 'localhost:1234/'
+        if (req.params.opt === undefined){
+            url = url + req.params.request
+        }
+        else{
+            url = url + req.params.request+'/'+req.params.opt
+        }
+        
+        let curl = spawn('curl', ['-X', 'GET', url]);
+        console.log(url)
+        curl.stdout.on('data', (data) => {
+            chunkRes += data.toString('utf8');
+        })
+        curl.stderr.on('data', (data) => {     
+            chunkError+= data.toString('utf8');
+        })
+        curl.on('close', (code) => {
+            //console.log('--------------')
+            //console.log(chunkRes)
+            res.send(chunkRes)
+            //console.log('--------------')
+        })
+    })
+
+    app.get('/apiDet/:request?/:opt?',function(req, res){
+        let chunkRes = '';
+        let chunkError = '';
+        let url = 'localhost:3709/'
+        if(!req.params.request){
+            url = url;
+        }
+        else{
+            if (!req.params.opt){
+                url = url + req.params.request
+            }
+            else{
+                url = url + req.params.request+'/'+req.params.opt
+            }
+        }
+
+        
+        let curl = spawn('curl', ['-X', 'GET', url]);
+        console.log(url)
+        curl.stdout.on('data', (data) => {
+            chunkRes += data.toString('utf8');
+        })
+        curl.stderr.on('data', (data) => {     
+            chunkError+= data.toString('utf8');
+        })
+        curl.on('close', (code) => {
+            //console.log('--------------')
+            //console.log(chunkRes)
+            res.send(chunkRes)
+            //console.log('--------------')
+        })
+    })
+
     // listening the server
     server.listen(port, function () {
         console.log('Server listening on port ' + port + ' !');
@@ -104,7 +166,7 @@ var httpStart = function (worker, downloader, downloadRoute) {
         var results; // keep the results in case user wants to download or else
         socket
         .on("submission", function (data) {
-            //console.log(data);
+            console.log(data);
             worker(data)
             .on('jobCompletion', function (jsonRes, jobObject) {
                 results = jsonRes;

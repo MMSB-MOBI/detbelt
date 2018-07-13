@@ -19,6 +19,7 @@ socket.on('connect', function(){
     console.log("connecté");
 });
 
+let qwest = require('qwest');
 
 var createHeader = function (elem) {
 
@@ -120,7 +121,14 @@ $(function(){
         self.pdbFile = fileContent;
         cpSubmitBox.removeClass("col-xs-12");
         cpSubmitBox.addClass("col-xs-8");
-        cpDetBox.display(jsonFile);
+        /* Here lines to know what detergents are available inside database */
+        let url = "http://detbelt-dev.ibcp.fr/apiDet/getallid/"
+        qwest.get(url).then(function(xhr,response){
+            //console.log(response.data)
+            let infos = JSON.parse(response)
+            cpDetBox.display(jsonFile,infos.data);
+            //cpDetBox.display(jsonFile);
+        })
     });
 
     cpSubmitBox.on("display",function(){
@@ -137,6 +145,7 @@ $(function(){
 
     cpDetBox.on("submit", function(requestPPM, detList){
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
+        console.dir(data)
         cpSubmitBox.setWait("loadON");
         socket.emit("submission", data);
     });
@@ -163,5 +172,108 @@ $(function(){
          console.log(data);
          socket.emit(type, data);
     });
+
+// added by Sébastien Delolme-Sabatier 
+
+    cpDetBox.on("askInfos",function(request){
+        let url = "http://detbelt-dev.ibcp.fr/apiDet/getOne/"+request
+        let to_send = {};
+        if(document.getElementsByTagName("advanced-sheet-handler").length===0){
+            document.addEventListener('sheetLoaded',function(){
+                let sheet = document.getElementsByTagName('advanced-sheet')[0];
+                qwest.get(url).then(function(xhr,response){
+                    let infos = JSON.parse(response)
+                    for (let i of Object.keys(infos.data[0])){
+                        if (i!=="image" && i!=="PDB_file"){
+                            if(i === "volume"){
+                                
+                                to_send[i]=infos.data[0][i]+" Å\u00B3";
+                            }
+                            else if(i === "CMC"){
+                                to_send[i] = infos.data[0][i] + " mM"
+                            }
+                            else if(i === "color"){
+                                
+                                to_send[i] = "rgb("+infos.data[0][i].toString()+")"
+                            }
+                            else{
+                             to_send[i]=infos.data[0][i]  
+                            }
+                        }
+                    }
+                    sheet.data={"data":[to_send]}
+                    sheet.pdbFile = "/pdb/pdb_deter/"+request+".pdb"
+                })
+            })
+        }
+        else{
+            let sheet = document.getElementsByTagName('advanced-sheet')[0];
+            qwest.get(url).then(function(xhr,response){
+                let infos = JSON.parse(response)
+                for (let i of Object.keys(infos.data[0])){
+                    if (i!=="image" && i!=="PDB_file"){
+                        if(i === "volume"){        
+                            to_send[i]=infos.data[0][i]+" Å\u00B3";
+                        }
+                        else if(i === "CMC"){
+                            to_send[i] = infos.data[0][i] + " mM"
+                        }
+                        else if(i === "color"){
+                            to_send[i] = "rgb("+infos.data[0][i].toString()+")"
+                        }
+                        else{
+                            to_send[i]=infos.data[0][i]  
+                            }
+                    }
+                }
+                sheet.data={"data":[to_send]}
+                sheet.pdbFile = "/pdb/pdb_deter/"+request+".pdb"
+            })
+        }
+    })
+
+
+
+     document.addEventListener('askResults',function(to_find){
+        let url = "http://detbelt-dev.ibcp.fr/apiWhite/results/"+to_find.detail;
+        let sb = document.getElementsByTagName('advanced-searchbar')[0];
+        qwest.get(url).then(function(xhr,response){
+            let to_send = []
+            JSONres = JSON.parse(response)
+            for (let i of JSONres){
+                to_send.push({"id":i.pdbCode,"text":i[i.matchFields[0]],"pill":i.matchFields[0]})
+            }
+            sb.data = to_send;
+        })
+        //sb.data = [{"id":"2HYD","text":"test","pill":"test"}]
+
+    })
+
+    document.addEventListener('clickedOnResult',function(result){
+            
+            let to_load = result.detail;
+            to_load = to_load.toLowerCase()+".pdb";
+            let path = '/pdb/'+to_load
+            let to_show = {"url":path}
+            $.get(to_show.url)
+            .done(function(a) {
+                to_show["fileContent"]=a;
+                cpSubmitBox.showProt(to_show)
+            })
+            .fail(function() { 
+                alert("Oops ! Seems like we don't have "+ to_load + " in our database")
+            })
+            
+        })
+    
+     
+/*      console.log(result.detail)
+    sb.addEventListener('clickedOnResult',function(result){
+        console.log(result.detail)
+        // What do we do next ? -> show it inside the input (means we have to add a method to modify the content of it)? delete the component ? Depend on the user but need to add Methods
+        // User choice : here we decide to hide the component to the user after we send the selected item.
+
+    }) 
+    */
 });
 
