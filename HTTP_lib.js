@@ -99,16 +99,16 @@ var httpStart = function (worker, downloader, downloadRoute) {
     app.get('/apiWhite/:request/:opt?',function(req, res){
         let chunkRes = '';
         let chunkError = '';
-        let url = 'localhost:1234/'
+        let url = 'localhost:1134/'
         if (req.params.opt === undefined){
             url = url + req.params.request
         }
         else{
             url = url + req.params.request+'/'+req.params.opt
         }
-        
+        console.dir(req.params) 
         let curl = spawn('curl', ['-X', 'GET', url]);
-        console.log(url)
+        console.log("=>" + url)
         curl.stdout.on('data', (data) => {
             chunkRes += data.toString('utf8');
         })
