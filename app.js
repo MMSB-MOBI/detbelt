@@ -2,6 +2,8 @@ var SERVER_DOMAIN = ('detbelt-dev.ibcp.fr'); // 3001
 var CLIENT_VERSION=0.9;
 //description of the client
 
+const URL = "http://detbelt-dev.ibcp.fr"
+
 window.$ = window.jQuery = require("jquery");
 var Backbone = require('backbone');
 var EventEmitter = require('events');
@@ -122,7 +124,7 @@ $(function(){
         cpSubmitBox.removeClass("col-xs-12");
         cpSubmitBox.addClass("col-xs-8");
         /* Here lines to know what detergents are available inside database */
-        let url = "http://detbelt-dev.ibcp.fr/apiDet/getallid/"
+        let url = URL + "/apiDet/getallid/"
         qwest.get(url).then(function(xhr,response){
             //console.log(response.data)
             let infos = JSON.parse(response)
@@ -176,7 +178,7 @@ $(function(){
 // added by Sébastien Delolme-Sabatier 
 
     cpDetBox.on("askInfos",function(request){
-        let url = "http://detbelt-dev.ibcp.fr/apiDet/getOne/"+request
+        let url = URL + "/apiDet/getOne/"+request
         let to_send = {};
         if(document.getElementsByTagName("advanced-sheet-handler").length===0){
             document.addEventListener('sheetLoaded',function(){
@@ -235,7 +237,7 @@ $(function(){
 
 
      document.addEventListener('askResults',function(to_find){
-        let url = "http://detbelt-dev.ibcp.fr/apiWhite/results/"+to_find.detail;
+        let url = URL + "/apiWhite/results/"+to_find.detail;
         let sb = document.getElementsByTagName('advanced-searchbar')[0];
         qwest.get(url).then(function(xhr,response){
             let to_send = []

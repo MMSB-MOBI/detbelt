@@ -8,7 +8,7 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 
 
-var port = 3001;
+//var port = 3001;
 
 
 /*
@@ -86,7 +86,7 @@ var setClientRoute = function(app, downloadRoute) {
 *   for normal mode = a function creating the files and returning their path)
 * @downloadRoute [string] : path to the cache directory where download files will be saved
 */
-var httpStart = function (worker, downloader, downloadRoute) {
+var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) {
     if (! worker) throw 'No worker function detected';
     if (! downloader) throw 'No downloader function detected';
     if (! downloadRoute) throw 'No downloadRoute function detected';
@@ -99,7 +99,7 @@ var httpStart = function (worker, downloader, downloadRoute) {
     app.get('/apiWhite/:request/:opt?',function(req, res){
         let chunkRes = '';
         let chunkError = '';
-        let url = 'localhost:1134/'
+        let url = dbEndpoints.proteins
         if (req.params.opt === undefined){
             url = url + req.params.request
         }
@@ -126,7 +126,7 @@ var httpStart = function (worker, downloader, downloadRoute) {
     app.get('/apiDet/:request?/:opt?',function(req, res){
         let chunkRes = '';
         let chunkError = '';
-        let url = 'localhost:3709/'
+        let url = dbEndpoints.detergents
         if(!req.params.request){
             url = url;
         }
