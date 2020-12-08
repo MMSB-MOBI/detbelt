@@ -87,7 +87,7 @@ if (bBack) {
 FOR FRONT OR NORMAL MODES
 ************************/
 } else {
-    HTTP_lib.httpStart(worker, downloader, bean.scriptVariables.DOWNLOAD_DIR);
+    HTTP_lib.httpStart(worker, downloader, bean.scriptVariables.DOWNLOAD_DIR, bean.port, bean.dbEndpoints);
 }
 
 
