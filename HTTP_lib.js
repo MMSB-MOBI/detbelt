@@ -7,6 +7,8 @@ var events = require ('events');
 var fs = require('fs');
 var bodyParser = require('body-parser');
 
+const constants = require('./constants.js')
+
 
 //var port = 3001;
 
@@ -86,7 +88,7 @@ var setClientRoute = function(app, downloadRoute) {
 *   for normal mode = a function creating the files and returning their path)
 * @downloadRoute [string] : path to the cache directory where download files will be saved
 */
-var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) {
+var httpStart = function (worker, downloader, downloadRoute) {
     if (! worker) throw 'No worker function detected';
     if (! downloader) throw 'No downloader function detected';
     if (! downloadRoute) throw 'No downloadRoute function detected';
@@ -99,14 +101,15 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
     app.get('/apiWhite/:request/:opt?',function(req, res){
         let chunkRes = '';
         let chunkError = '';
-        let url = dbEndpoints.proteins
+        let url = constants.PROTEIN_DB
         if (req.params.opt === undefined){
             url = url + req.params.request
         }
         else{
             url = url + req.params.request+'/'+req.params.opt
         }
-        console.dir(req.params) 
+        
+        //console.dir(req.params) 
         let curl = spawn('curl', ['-X', 'GET', url]);
         console.log("=>" + url)
         curl.stdout.on('data', (data) => {
@@ -126,7 +129,7 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
     app.get('/apiDet/:request?/:opt?',function(req, res){
         let chunkRes = '';
         let chunkError = '';
-        let url = dbEndpoints.detergents
+        let url = constants.DETERGENT_DB
         if(!req.params.request){
             url = url;
         }
@@ -157,8 +160,8 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
     })
 
     // listening the server
-    server.listen(port, function () {
-        console.log('Server listening on port ' + port + ' !');
+    server.listen(constants.SERVER_PORT, function () {
+        console.log('Server listening on port ' + constants.SERVER_PORT + ' !');
     });
 
     // connection via socket
