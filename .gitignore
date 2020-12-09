@@ -6,3 +6,4 @@ web/js/ngl-master/dist/*
 !web/js/ngl-master/dist/ngl.js
 ._*
 *.zip
+static/pdb/
