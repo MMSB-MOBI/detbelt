@@ -1,8 +1,2 @@
 node_modules/
-js/bundle.js
-web/js/ngl-master/*
-!web/js/ngl-master/dist
-web/js/ngl-master/dist/*
-!web/js/ngl-master/dist/ngl.js
-._*
-*.zip
+dist/

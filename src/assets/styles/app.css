@@ -1,8 +1,13 @@
-/*@import url("node_modules/bootstrap/dist/css/bootstrap.min.css");
-@import url("node_modules/font-awesome/css/font-awesome.min.css");*/
+@import url("../../../node_modules/bootstrap/dist/css/bootstrap.min.css");
+@import url("../../../node_modules/font-awesome/css/font-awesome.min.css");
 @import url("custom.css");
 @import url("pdbSubmit.css");
 @import url("dBox.css");
 @import url("downloadBox.css");
+
+@font-face {
+    font-family: americanTW;
+    src: url('../fonts/americanTypeWriterRegular.ttf');
+}
 
 

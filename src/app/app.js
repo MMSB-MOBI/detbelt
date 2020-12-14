@@ -1,4 +1,4 @@
-var SERVER_DOMAIN = ('localhost:3001'); // 3001
+var SERVER_DOMAIN = ('http://detbelt-dev.ibcp.fr'); // 3001
 var CLIENT_VERSION=0.9;
 //description of the client
 
@@ -26,7 +26,7 @@ let qwest = require('qwest');
 var createHeader = function (elem) {
 
     $(elem).append('<div class="welcomeHead"><img class="icon" src="img/detBelt.png"/>Welcome to the Det.Belt Server </div>'
-            + '<div class="tutorial"><a href="tutorial" target="_blank"><span>Tutorial</span><i class="fa-2x fa fa-graduation-cap"/></a></div>'
+            + '<div class="tutorial"><a href="tutorial" target="_blank"><span>Tutorial</span></a></div>'
             + '<div class="headContent">The Det.Belt server allows you to have a broad idea of the detergent belt around your membrane protein. '
             + 'The detergent is represented as a transparent hollow cylinder around the hydrophobic region of the protein. '
             + 'This approximation is particularly fitted to biochemical studies to give an overall idea of what is expected '
@@ -95,10 +95,9 @@ $(function(){
     return;
 */
 //-----
-
-    cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
-    cpDetBox = dBox.new({root : "#main",idNum : 2});
-    cpDownloadBox = downloadBox.new({root : "#main", idNum : 3})
+    const cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
+    const cpDetBox = dBox.new({root : "#main",idNum : 2});
+    const cpDownloadBox = downloadBox.new({root : "#main", idNum : 3})
     createHeader("body .page-header");
     createFooter("body div.footer");
 
@@ -241,7 +240,7 @@ $(function(){
         let sb = document.getElementsByTagName('advanced-searchbar')[0];
         qwest.get(url).then(function(xhr,response){
             let to_send = []
-            JSONres = JSON.parse(response)
+            const JSONres = JSON.parse(response)
             for (let i of JSONres){
                 to_send.push({"id":i.pdbCode,"text":i[i.matchFields[0]],"pill":i.matchFields[0]})
             }

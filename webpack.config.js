@@ -10,12 +10,21 @@ module.exports = {
     devServer:{
         contentBase: './src'
     },
+    resolve: {
+      alias: {
+        searchbar: 'advanced-searchbar/dist/advanced-searchbar.js'
+      }
+    },
     module: {
         rules: [
           {
-           test: /\.css$/,
-           use: ['style-loader', 'css-loader']
-          }
+            test: /\.(sass|scss|css)$/,
+            use: ['style-loader','css-loader','sass-loader']
+        },
+        {
+            test: /\.(svg|eot|woff|woff2|ttf)$/,
+            use: ['file-loader']
+        }
          ]
         },
     plugins: [

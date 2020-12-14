@@ -63,18 +63,18 @@ var backCompute = function (worker, pdbFile, deterFile, requestPPM) {
 var setClientRoute = function(app, downloadRoute) {
     app.use(bodyParser.json({limit : '5mb'})); // for parsing application/json
     app.use(bodyParser.urlencoded({limit : '5mb', extended : false}));
-    app.use('/bundle', express.static(__dirname + '/js'));
-    app.use('/assets', express.static(__dirname + '/static'));
-    app.use('/fonts', express.static(__dirname + '/static/fonts'));
-    app.use('/img', express.static(__dirname + '/static/img'));
-    app.use('/ngl', express.static(__dirname + '/web/js/ngl-master/dist'));
+    app.use('/bundle', express.static(__dirname + '/dist'));
+    app.use('/assets', express.static(__dirname + '/src/assets'));
+    app.use('/fonts', express.static(__dirname + '/src/assets/fonts'));
+    app.use('/img', express.static(__dirname + '/src/assets/img'));
+    app.use('/ngl', express.static(__dirname + '/src/app/ngl-master/dist'));
     app.use('/resultSample', express.static(__dirname + '/data/resultSample/'));
     app.use('/download', express.static(downloadRoute));
     app.get('/tutorial', function(req, res) {
-             res.sendFile(__dirname + '/static/tutorial.html');
+             res.sendFile(__dirname + '/src/tutorial.html');
     });
     app.use('/modules', express.static(__dirname + '/node_modules'));
-    app.use('/pdb', express.static(__dirname + '/static/pdb'));
+    //app.use('/pdb', express.static(__dirname + '/static/pdb'));
 }
 
 
@@ -93,13 +93,13 @@ var httpStart = function (worker, downloader, downloadRoute) {
 
     setClientRoute(app, downloadRoute);
 	app.get('/', function(req, res) {
-        res.sendFile(__dirname+'/web/html/template.html');
+        res.sendFile(__dirname+'/src/index.html');
     });
 
     app.get('/apiWhite/:request/:opt?',function(req, res){
         let chunkRes = '';
         let chunkError = '';
-        let url = 'localhost:1234/'
+        let url = 'localhost:1134/'
         if (req.params.opt === undefined){
             url = url + req.params.request
         }

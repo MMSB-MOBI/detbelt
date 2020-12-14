@@ -331,8 +331,11 @@ pdbSubmit.prototype.showProt = function(opt){
 
 module.exports = {
     new : function (opt) {
+        console.log("new function")
         // opt safety assignment
         var obj = new pdbSubmit(opt);
+        console.log("OO");
+        console.log(obj); 
         return obj;
     }
 }
