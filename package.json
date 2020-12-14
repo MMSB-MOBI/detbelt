@@ -18,25 +18,26 @@
     "jquery": "^3.2.1",
     "jsonfile": "^3.0.0",
     "nslurmardocklegacy": "^1.1.1",
+    "path": "^0.12.7",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
     "qwest": "^4.5.0",
     "socket.io": "^2.0.1",
     "socket.io-client": "^2.0.1",
     "sprintf-js": "^1.1.0"
   },
-  "devDependencies": {
-    "browserify": "^14.3.0",
-    "browserify-css": "^0.10.0",
-    "gulp": "^3.9.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^2.1.2",
-    "gulp-util": "^3.0.8",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.9.0"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server"
   },
   "author": "Yannick Gestin",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^5.0.1",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.10.0",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.11.0"
+  }
 }
