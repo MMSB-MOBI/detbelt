@@ -1,4 +1,4 @@
-var SERVER_DOMAIN = ('detbelt-dev.ibcp.fr'); // 3001
+var SERVER_DOMAIN = ('localhost:3001'); // 3001
 var CLIENT_VERSION=0.9;
 //description of the client
 
@@ -8,10 +8,12 @@ var EventEmitter = require('events');
 var io = require('socket.io-client/dist/socket.io.js');
 var path = require('path');
 var bootStrap = require('bootstrap');
-var pdbSubmit = require('./web/js/pdbSubmit.js');
-var dBox = require('./web/js/dBox.js');
-var downloadBox = require('./web/js/downloadBox.js');
-require("./app.css");
+var pdbSubmit = require('./pdbSubmit.js');
+var dBox = require('./dBox.js');
+var downloadBox = require('./downloadBox.js');
+
+import "../assets/styles/app.css"
+
 
 var jsonFile = "assets/detergents.json";
 var socket = io.connect(SERVER_DOMAIN);
