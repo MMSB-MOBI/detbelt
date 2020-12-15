@@ -169,15 +169,14 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
     $("#w_"+this.idNum).removeClass(uneClass);
 }
 
-pdbSubmit.prototype.nglStart = function(fileObject) {
+pdbSubmit.prototype.nglStart = function() {
     //function to create canva and print the protein containing in fileObject
     var self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
-    //fileObject = "pdb/4lxj.pdb"
-    //fileObject = "http://files.rcsb.org/download/5IOS.cif"
-    //console.log(fileObject)
 
-    this.stage.loadFile(fileObject, { defaultRepresentation: true })
+    //Cecile 15/12/20 not fileObject anymore, just read from self.fileContent string. 
+    const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
+    this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
             o.setDefaultAssembly('');
             o.autoView();
@@ -306,36 +305,24 @@ pdbSubmit.prototype.getCoronaData = function() {
 };
 
 pdbSubmit.prototype.showProt = function(opt){
-    if(opt.hasOwnProperty('fileObject')){
-        this.nglStart(opt.fileObject);  // in a function
-        $(this.getNode()).find('input.file').remove()
-        $(this.getNode()).find('div.searchBlock').remove()
-        $(this.getNode()).find('div.fileBlock').removeClass('col-md-6')
-
-    }
-    else if (opt.hasOwnProperty('url')){
-        //getFileContent
+    if (opt.hasOwnProperty('fileContent')){
         this.fileContent = opt.fileContent;
-        this.nglStart(opt.url);
+        this.nglStart();
         $(this.getNode()).find('input.file').remove()
         $(this.getNode()).find('div.searchBlock').remove()
         $(this.getNode()).find('div.fileBlock').removeClass('col-md-6')
-
     }
     else{
-        alert("can't do anything")
+        alert("error while loading prot")
+        console.error("pdbSubmit.js fileContent key not in object")
     }
-
 }
 
 
 module.exports = {
     new : function (opt) {
-        console.log("new function")
         // opt safety assignment
         var obj = new pdbSubmit(opt);
-        console.log("OO");
-        console.log(obj); 
         return obj;
     }
 }

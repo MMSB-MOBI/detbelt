@@ -251,21 +251,24 @@ $(function(){
     })
 
     document.addEventListener('clickedOnResult',function(result){
-            
-            let to_load = result.detail;
-            to_load = to_load.toLowerCase()+".pdb";
-            let path = '/pdb/'+to_load
-            let to_show = {"url":path}
-            $.get(to_show.url)
-            .done(function(a) {
-                to_show["fileContent"]=a;
-                cpSubmitBox.showProt(to_show)
-            })
-            .fail(function() { 
-                alert("Oops ! Seems like we don't have "+ to_load + " in our database")
-            })
-            
+        console.log("bundle.js clickedOnResult")
+        console.log("OOOOOOOOOOOOO");
+        const url = SERVER_DOMAIN + "/apiWhite/pdb/" + result.detail; 
+        qwest.get(url).then(function(xhr,response){
+          const JSONres = JSON.parse(response); 
+          //JSONres.url = "/pdb/1a0t.pdb"; 
+          console.log(JSONres); 
+          if ("error" in JSONres){
+            console.error(JSONres.error.message)
+              if (JSONres.error.code === "ENNOENT") alert(`Can't access to ${result.detail} pdb file`)
+              else alert("Can't load pdb, an error occurs")
+          }
+          else {
+            console.log("cpSubmitBox.showProt"); 
+            cpSubmitBox.showProt(JSONres)
+          }
         })
+      })
     
      
 /*      console.log(result.detail)

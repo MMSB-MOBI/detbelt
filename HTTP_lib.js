@@ -74,7 +74,7 @@ var setClientRoute = function(app, downloadRoute) {
              res.sendFile(__dirname + '/src/tutorial.html');
     });
     app.use('/modules', express.static(__dirname + '/node_modules'));
-    //app.use('/pdb', express.static(__dirname + '/static/pdb'));
+    app.use('/pdb', express.static(__dirname + '/data/pdb'));
 }
 
 
