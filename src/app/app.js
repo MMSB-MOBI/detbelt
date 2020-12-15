@@ -251,20 +251,16 @@ $(function(){
     })
 
     document.addEventListener('clickedOnResult',function(result){
-        console.log("bundle.js clickedOnResult")
-        console.log("OOOOOOOOOOOOO");
         const url = SERVER_DOMAIN + "/apiWhite/pdb/" + result.detail; 
         qwest.get(url).then(function(xhr,response){
           const JSONres = JSON.parse(response); 
           //JSONres.url = "/pdb/1a0t.pdb"; 
-          console.log(JSONres); 
           if ("error" in JSONres){
             console.error(JSONres.error.message)
               if (JSONres.error.code === "ENNOENT") alert(`Can't access to ${result.detail} pdb file`)
               else alert("Can't load pdb, an error occurs")
           }
           else {
-            console.log("cpSubmitBox.showProt"); 
             cpSubmitBox.showProt(JSONres)
           }
         })
