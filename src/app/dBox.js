@@ -162,37 +162,20 @@ dBox.prototype.mapper = function(opt) {
 
 };
 
-dBox.prototype.display = function(jsonFile,dbDetAvailable) {
+dBox.prototype.display = function(jsonFile,dbDetAvailable, sortByCategory) {
     //this function browse the JSONFile and store his data in the variable dataDetergentFromJson.
     //create the variable availableData
     if (this.drawn) return;
     var self = this;
     this.boxNumber = 0;
-    this.availableDet = [];
-    this.detergentRefLitt = {};
-    $.getJSON(jsonFile, function (jsonData) {
-
-
-        self.dataDetergentFromJson = jsonData.data;
-        for (var detCategory in self.dataDetergentFromJson) {
-            self.detergentRefLitt[detCategory] = self.dataDetergentFromJson[detCategory].map(function(i){return i.name;});
-        }
-       /*
-        self.detergentRefList = self.dataDetergentFromJson.map(function(e){
-            var list = e.map(function(i){return i.name;});
-            return { "categoy" : e.name , "detergents" : list };
-        });
-        */
-        self.availableDet = JSON.parse(JSON.stringify(self.detergentRefLitt));
+    //this.availableDet = [];
+    //this.detergentRefLitt = {};
+    self.availableDet = sortByCategory
        // return;
         // Initial component graphical state
 
-        self.drawEmptySectionAndButton(dbDetAvailable);
-        self.draw = true;
-    })
-    .fail(function() {
-        console.log( "error loading detergent file at " + jsonFile );
-  });
+    self.drawEmptySectionAndButton(dbDetAvailable);
+    self.draw = true;
 }
 
 

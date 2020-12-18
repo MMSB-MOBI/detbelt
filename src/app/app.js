@@ -124,12 +124,13 @@ $(function(){
         cpSubmitBox.addClass("col-xs-8");
         /* Here lines to know what detergents are available inside database */
         let url = SERVER_DOMAIN + "/apiDet/getallid/"
-        qwest.get(url).then(function(xhr,response){
-            //console.log(response.data)
-            let infos = JSON.parse(response)
-            cpDetBox.display(jsonFile,infos.data);
-            //cpDetBox.display(jsonFile);
+
+        qwest.get(url).get(SERVER_DOMAIN + "/apiDet/sortByCategory").then( values => {
+            const infos = JSON.parse(values[0][1])
+            const sortByCat = JSON.parse(values[1][1])
+            cpDetBox.display(jsonFile,infos.data, sortByCat.data);
         })
+        
     });
 
     cpSubmitBox.on("display",function(){
