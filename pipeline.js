@@ -182,8 +182,8 @@ var configJobCorona = function (cacheDir, requestPPM) {
 
     exportVar['pdbFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.pdb';
     exportVar['detergentFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.detergent';
+    exportVar['detergentVolumes'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '_det_volume.json';
     exportVar['orientForDisplay'] = dictJobManager.scriptVariables.BIN_DIR + '/rotateDirty.pl';
-    exportVar['detergentVolumes'] = dictJobManager.scriptVariables.BIN_DIR + '/detergents.json';
     exportVar['calculateVolTot'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateVolTot.py';
     exportVar['calculateRadius'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateRadius.R';
     modules.push('naccess');
@@ -204,6 +204,7 @@ var configJobCorona = function (cacheDir, requestPPM) {
 *    - requestPPM [boolean] = indicate if we need to run with PPM or not
 *    - deterData [list of JSON OR string] = informations about the detergents. JSON must be like :
 *    {'detName' : 'DDM', 'qt' : 461} so it must be dumpered
+    - deterVolumes : json with detergents volumes (database snapshot)
 */
 var compute = function (data) {
     if (! data) throw 'ERROR in compute() function : no data specified';
@@ -221,6 +222,7 @@ var compute = function (data) {
         fs.mkdirSync(cacheDir + '/' + jobOpt.id + '_inputs/');
         fs.writeFileSync(jobOpt.exportVar.pdbFile, data.fileContent);
         fs.writeFileSync(jobOpt.exportVar.detergentFile, deterData);
+        fs.writeFileSync(jobOpt.exportVar.detergentVolumes, JSON.stringify(data.deterVol))
     } catch (err) { throw err; }
 
     // run

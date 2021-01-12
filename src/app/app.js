@@ -146,10 +146,17 @@ $(function(){
     });
 
     cpDetBox.on("submit", function(requestPPM, detList){
-        var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList};
-        console.dir(data)
-        cpSubmitBox.setWait("loadON");
-        socket.emit("submission", data);
+        console.log("detBox submit")
+        const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
+        qwest.get(snapshot_url).then((xhr, response) => {
+            const det_volume = JSON.parse(response)
+            var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList, "deterVol" : det_volume};
+            cpSubmitBox.setWait("loadON");
+            socket.emit("submission", data);
+        })
+        
+       
+        
     });
 
     cpDetBox.on("result",function(pdbText, data, detList){

@@ -166,7 +166,6 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
         var results; // keep the results in case user wants to download or else
         socket
         .on("submission", function (data) {
-            console.log(data);
             worker(data)
             .on('jobCompletion', function (jsonRes, jobObject) {
                 results = jsonRes;
