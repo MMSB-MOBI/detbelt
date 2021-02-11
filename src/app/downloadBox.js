@@ -89,8 +89,9 @@ downloadBox.prototype.display = function() {
 }
 
 downloadBox.prototype.downloadFile = function(data) {
-    console.log(data);
-    $(".liensDownload").append('<a href='+ data.path +'>.</a>');
+    console.log("downloadFile");
+    console.log(data.path)
+    $(".liensDownload").append('<a type="text/plain" href='+ data.path +'>.</a>');
     //console.log($(".liensDownload > a:last"));
     $(".liensDownload > a:last").get(0).click();
     $(".liensDownload > a:last").remove();

@@ -414,6 +414,10 @@ var concatJson = function (listJson) {
 * Control the downloadings depending on the @mode
 */
 var download = function (mode, newData, oldData) {
+    console.log("pipeline.js download")
+    console.log("mode", mode)
+    console.log("newData", newData)
+    console.log("oldData", oldData)
     if (! mode) console.log('ERROR in download() method : no mode specified');
     if (! newData) console.log('ERROR in download() method : no newData specified');
     var emitter = new events.EventEmitter();

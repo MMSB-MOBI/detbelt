@@ -82,7 +82,8 @@ pdbSubmit.prototype.setWait = function(status){
     }
 };
 
-pdbSubmit.prototype.display = function(jsonFile) {
+pdbSubmit.prototype.display = function(jsonData) {
+    console.log("pdbSubmit display", jsonData)
     //create the DOM
     //send jsonFile in argument to stock his color in object dataDetergentFromJson
     var self = this;
@@ -100,14 +101,24 @@ pdbSubmit.prototype.display = function(jsonFile) {
             + '</div>');
     this.emiter.emit('display'); //event for give at submitBox compenent the size col-xs-12
 
-    $.getJSON(jsonFile, function (jsonData) {
+
+
+    /*$.getJSON(jsonFile, function (jsonData) {
         self.dataDetergentFromJson = [];
         for (var category in jsonData.data) {
             jsonData.data[category].forEach(function(d){
                  self.dataDetergentFromJson.push(d);
             });
         }
-    });
+
+    });*/
+
+    self.dataDetergentFromJson = [];
+    for (var category in jsonData.data) {
+        jsonData.data[category].forEach(function(d){
+             self.dataDetergentFromJson.push(d);
+        });
+    }
 
     var _drawButton = function (node) {
         //create a button, event for read a pdb file and manage the file error
@@ -175,6 +186,8 @@ pdbSubmit.prototype.nglStart = function() {
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
 
     //Cecile 15/12/20 not fileObject anymore, just read from self.fileContent string. 
+    console.log("nglStart")
+    console.log(self.dataDetergentFromJson)
     const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
@@ -200,10 +213,13 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     //data containing halfH and radius of the crown
     //fct to add the crown after the request to the server
     var self = this;
+    console.log
     this.pdbText = pdbText;
     this.data = data;
     this.detList = detList;
     var blob = new Blob([this.pdbText],{ type:'text/plain' });
+    console.log("detList", detList)
+    console.log("data", data)
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
             o.setDefaultAssembly('');
@@ -242,15 +258,35 @@ pdbSubmit.prototype.nglCorona = function() {
 }
 
 pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
+    console.log(`CC: ${color}`);
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
     var cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
     var pointY = this.oldPoint - cylH;
+    console.log(this.oldPoint, pointY, this.beltRadius);
+    console.dir(color);
     shape.addCylinder([0, this.oldPoint, 0], [0, pointY, 0], color, this.beltRadius);
     var shapeComp = this.stage.addComponentFromObject(shape);
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
     this.oldPoint = pointY;
     this.nglStructureView_belt.autoView();
 }
+
+/* GL TO DO
+ * Add button/ set as default/ recompute on corona refresh
+ * hook destructor calls
+ *
+pdbSubmit.prototype.makeHollow = function() {
+	const hollowShape = new NGL.Shape("hollowShape", { disableImpostor: true } );
+	const hollowHeight = this.halfH * 2;
+	const hollowHeightOffset = hollowHeight * (-1);
+	const hollowRadius = this.pdbSubmit.proteinRadius;
+	hollowShape.addCylinder( [0, hollowHeightOffset, 0], 
+				 [0, hollowHeight      , 0], 
+				 [169,169,169], hollowRadius);
+	const hollowComp = this.stage.addComponentFromObject(hollowShape) 
+	hollowComp.addRepresentation( "hollow", { "opacity" : 1.0 } );
+}
+*/
 
 pdbSubmit.prototype.nglEditionData = function(detList) {
     //fct to calculate the new volume and edit the crown after the change of the detergents stored in detList
@@ -259,17 +295,22 @@ pdbSubmit.prototype.nglEditionData = function(detList) {
     this.volumeTOT = 0;
     var pi = 3.1415;
     this.proteinRadius = parseFloat(this.data.proteinRadius);
+    console.log("dataDetergentFromJson", self.dataDetergentFromJson); 
     this.detList.forEach(function(e){
         var name = e.detName;
         self.dataDetergentFromJson.forEach(function(i){
             if(name===i.name){
                 var ni = parseFloat(e.qt);
+                console.log("ni", ni)
                 var vi = parseFloat(i.vol);
+                console.log("vi", vi)
                 self.volumeTOT += ni * vi;
             }
         });
     });
+    console.log("nglEditionData volumeTot", self.volumeTOT)
     this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
+    console.log("beltRadius", this.beltRadius)
     $(this.volumeValueElem).html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
     this.nglCorona();

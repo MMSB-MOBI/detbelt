@@ -162,14 +162,16 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
     });
 
     // connection via socket
+    let PDB_RESULTS; 
     io.on("connection", function (socket) {
-        var results; // keep the results in case user wants to download or else
+        console.log("io on connection")
         socket
         .on("submission", function (data) {
             worker(data)
             .on('jobCompletion', function (jsonRes, jobObject) {
-                results = jsonRes;
-                socket.emit('results', results);
+                console.log("jobCompleted")
+                PDB_RESULTS = jsonRes; 
+                socket.emit('results', PDB_RESULTS);
             })
             .on('stderrContent', function (err) {
                 socket.emit('stderrContent');
@@ -182,8 +184,9 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
             });
         })
         .on("downloadPdb", function (newData) {
+            console.log("on download pdb")
             var mode = 'pdbFile';
-            downloader(mode, newData, results).on('pdbAvailable', function (pathFile) {
+            downloader(mode, newData, PDB_RESULTS).on('pdbAvailable', function (pathFile) {
                 socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});
             });
         })
@@ -195,7 +198,7 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
         })
         .on("downloadZip", function (newData) {
             var mode = 'zip';
-            downloader(mode, newData, results).on('zipAvailable', function (pathFile) {
+            downloader(mode, newData, PDB_RESULTS).on('zipAvailable', function (pathFile) {
                 socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});
             });
         });

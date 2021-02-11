@@ -14,8 +14,10 @@ var downloadBox = require('./downloadBox.js');
 
 import "../assets/styles/app.css"
 
+// GL WebGL hack
+console.log("Startin app");
 
-var jsonFile = "assets/detergents.json";
+//var jsonFile = "assets/detergents.json";
 var socket = io.connect(SERVER_DOMAIN);
 socket.on('connect', function(){
     console.log("connecté");
@@ -73,7 +75,28 @@ var createFooter = function (elem){
     $(elem).append('<img src="img/logo-uni-lyon.png" style=" width: 13.5em;position: absolute; top: -18px; right:0.25em;"/>')
 }
 
-$(function(){
+/*const getSnapshot = async function(){
+    const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
+    qwest.get(snapshot_url).then((xhr, response) => {
+        console.log("qwest get snapshot")
+        const det_volume = JSON.parse(response)
+        return det_volume
+    })
+    
+}*/
+
+function getSnapshot(){
+    return new Promise(resolve => {
+        const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
+        qwest.get(snapshot_url).then((xhr, response) => {
+            console.log("qwest get snapshot")
+            const det_volume = JSON.parse(response)
+            resolve(det_volume)
+        })
+    })
+}
+
+$(async function(){
     var self = this;
 /*
         var listHelp = '<div class="downloadTooltip"><ul class="fa-ul">'
@@ -98,8 +121,17 @@ $(function(){
     const cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
     const cpDetBox = dBox.new({root : "#main",idNum : 2});
     const cpDownloadBox = downloadBox.new({root : "#main", idNum : 3})
+window.dev = {
+	'pdbSubmit' : cpSubmitBox,
+	'dBox'      : cpDetBox,
+	'download'  : cpDownloadBox
+};
+
+
     createHeader("body .page-header");
     createFooter("body div.footer");
+    const detergents_json_snapshot = await getSnapshot()
+    console.log("detergent_json_snapshot", detergents_json_snapshot)
 
     socket.on("results", function (data) {
         console.log("results");
@@ -115,8 +147,7 @@ $(function(){
         cpSubmitBox.error();
     });
 
-    cpSubmitBox.display(jsonFile);
-
+    cpSubmitBox.display(detergents_json_snapshot);
 
     cpSubmitBox.on("ngl_ok",function(fileContent){
         self.pdbFile = fileContent;
@@ -124,11 +155,11 @@ $(function(){
         cpSubmitBox.addClass("col-xs-8");
         /* Here lines to know what detergents are available inside database */
         let url = SERVER_DOMAIN + "/apiDet/getallid/"
-
+        console.log("ngl_ok")
         qwest.get(url).get(SERVER_DOMAIN + "/apiDet/sortByCategory").then( values => {
             const infos = JSON.parse(values[0][1])
             const sortByCat = JSON.parse(values[1][1])
-            cpDetBox.display(jsonFile,infos.data, sortByCat.data);
+            cpDetBox.display(detergents_json_snapshot,infos.data, sortByCat.data);
         })
         
     });
@@ -147,16 +178,11 @@ $(function(){
 
     cpDetBox.on("submit", function(requestPPM, detList){
         console.log("detBox submit")
-        const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
-        qwest.get(snapshot_url).then((xhr, response) => {
-            const det_volume = JSON.parse(response)
-            var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList, "deterVol" : det_volume};
-            cpSubmitBox.setWait("loadON");
-            socket.emit("submission", data);
-        })
-        
-       
-        
+        console.log(detergents_json_snapshot)
+        var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList, "deterVol" : detergents_json_snapshot};
+        console.log(data); 
+        cpSubmitBox.setWait("loadON");
+        socket.emit("submission", data);    
     });
 
     cpDetBox.on("result",function(pdbText, data, detList){

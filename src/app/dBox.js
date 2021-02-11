@@ -119,6 +119,7 @@ dBox.prototype.drawButtonRequest = function(){
         $(this).addClass('disabled');
         $(this).off("click");
         $(self.getNode()).find('.newDet').addClass('disabled');
+        console.log("detBox drawButtonRequest requestPPM", self.requestPPM); 
         self.emiter.emit("submit", self.requestPPM , self.detList);
     });
 }
