@@ -118,6 +118,7 @@ $(async function(){
     return;
 */
 //-----
+//
     const cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
     const cpDetBox = dBox.new({root : "#main",idNum : 2});
     const cpDownloadBox = downloadBox.new({root : "#main", idNum : 3})

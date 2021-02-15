@@ -1,5 +1,8 @@
 //pdbSubmit SubmitBox with canva
 var Core = require('./Core.js').Core;
+
+var blocker = require('./blocker.js');
+
 var sprintf = require("sprintf-js").sprintf,
     vsprintf = require("sprintf-js").vsprintf;
 
@@ -7,6 +10,8 @@ var sprintf = require("sprintf-js").sprintf,
 var pdbSubmit = function(opt) {
     var nArgs = opt ? opt : {};
     Core.call(this, nArgs);
+    this.hollowShape = null;
+    this.hollowComp  = null;
 }
 pdbSubmit.prototype = Object.create(Core.prototype);
 pdbSubmit.prototype.constructor = pdbSubmit;
@@ -26,14 +31,17 @@ pdbSubmit.prototype.drawControlBox = function () {
     //function created checkbox and associated events for turn the protein
     var self = this;
     var turnBoxTag = 'turnBox_' + self.idNum;
+    var extrudeTag = 'extrudeBox_' + self.idNum;
 
     $(this.getNode()).find(".pdbSubmitDiv").append('<div class="ctrlBox"></div>');
     var ctrlDiv = $(this.getNode()).find(".pdbSubmitDiv .ctrlBox")[0];
     $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" id="' + turnBoxTag + '" >Set molecule spin on/off</label></div>');
+    $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" checked=true id="' + extrudeTag + '" >Extrude protein volume</label></div>');
     $( "#" + turnBoxTag).on('change',function(){
         if(document.getElementById(turnBoxTag).checked){self.stage.setSpin( [ 0, 1, 0 ], 0.01 )}
             else{self.stage.setSpin( [ 0, 1, 0 ], 0 )}
     });
+    $( "#" + extrudeTag).on('change', () => self.toggleHollow());
 };
 
 pdbSubmit.prototype.drawResultBox = function () {
@@ -181,14 +189,19 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
 }
 
 pdbSubmit.prototype.nglStart = function() {
+    console.log("nglStart");
     //function to create canva and print the protein containing in fileObject
-    var self = this;
+    let self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
 
     //Cecile 15/12/20 not fileObject anymore, just read from self.fileContent string. 
-    console.log("nglStart")
+    
     console.log(self.dataDetergentFromJson)
     const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
+
+    console.log("Trying to read PDB");
+    console.log(self.fileContent);
+   
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
             o.setDefaultAssembly('');
@@ -205,10 +218,20 @@ pdbSubmit.prototype.nglStart = function() {
                 $(self.getNode()).find(".ngl_canva").addClass("display");
                 self.stage.handleResize();
             }
-    });
+        }).catch( (err) => {
+            console.log("OUPS");
+            console.warn(err);
+            var blockerWidget = blocker.new({root : "#main", type : "error"});
+            blockerWidget.on('close', () => {                
+                location.reload();
+            });
+            blockerWidget.toggle();
+        });
 }
 
 pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
+    console.log("NGL refresh");
+    
     //pdbText is the pdb file containing the prot oriented
     //data containing halfH and radius of the crown
     //fct to add the crown after the request to the server
@@ -258,35 +281,99 @@ pdbSubmit.prototype.nglCorona = function() {
 }
 
 pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
-    console.log(`CC: ${color}`);
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
     var cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
     var pointY = this.oldPoint - cylH;
-    console.log(this.oldPoint, pointY, this.beltRadius);
-    console.dir(color);
     shape.addCylinder([0, this.oldPoint, 0], [0, pointY, 0], color, this.beltRadius);
     var shapeComp = this.stage.addComponentFromObject(shape);
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
+    console.log("Color", color);
     this.oldPoint = pointY;
     this.nglStructureView_belt.autoView();
+    this.toggleHollow();
 }
 
 /* GL TO DO
  * Add button/ set as default/ recompute on corona refresh
  * hook destructor calls
  *
-pdbSubmit.prototype.makeHollow = function() {
-	const hollowShape = new NGL.Shape("hollowShape", { disableImpostor: true } );
-	const hollowHeight = this.halfH * 2;
+ * 
+ * */
+pdbSubmit.prototype.toggleHollow = function() {
+    if(this.hollowShape != null) {
+        console.log("hiding hollow")
+        this.hollowComp.removeAllRepresentations();        
+        this.stage.removeComponent(this.hollowShape);
+        this.hollowComp = null;
+        this.hollowShape = null; // Memory leak need to dispose materials/mesh
+        return;
+    };
+    const hollowHeight = this.halfH + 0.25;
 	const hollowHeightOffset = hollowHeight * (-1);
-	const hollowRadius = this.pdbSubmit.proteinRadius;
-	hollowShape.addCylinder( [0, hollowHeightOffset, 0], 
+	const hollowRadius = this.proteinRadius;
+    //const color5 = new THREE.Color( 'skyblue' );
+    console.log("showing hollow")
+    console.log(`v1 ${[0, hollowHeightOffset, 0]},${[0, hollowHeight, 0]}`); 
+
+    console.log(`proteinRadius ${this.proteinRadius}, belt Radius ${this.beltRadius}`);
+	this.hollowShape = new NGL.Shape("hollowShape", { disableImpostor: true } );
+	
+
+  
+	console.log([169,169,169], hollowRadius);
+
+	
+    this.hollowShape.addCylinder( [0, hollowHeightOffset, 0], 
 				 [0, hollowHeight      , 0], 
-				 [169,169,169], hollowRadius);
-	const hollowComp = this.stage.addComponentFromObject(hollowShape) 
-	hollowComp.addRepresentation( "hollow", { "opacity" : 1.0 } );
-}
+				 /*[0,0,0]*/[245,245,245], hollowRadius);
+    /*
+   this.hollowShape.addCylinder( [0, this.oldPoint, 0], [0, this.pointY, 0], 
+                                 [0, 0, 0]            , hollowRadius);
 */
+	this.hollowComp = this.stage.addComponentFromObject(this.hollowShape) 
+	this.hollowComp.addRepresentation( "hollow", { "opacity" : 0.6 } );
+}
+
+pdbSubmit.prototype.toggleExtrude = function() {
+    if(this.hollowShape != null) {
+        console.log("hiding extrude")
+        this.hollowComp.removeAllRepresentations();        
+        this.stage.removeComponent(this.hollowShape);
+        this.hollowComp = null;
+        this.hollowShape = null; // Memory leak need to dispose materials/mesh
+        return;
+    };
+    const hollowHeight = this.halfH + 0.25;
+	const hollowHeightOffset = hollowHeight * (-1);
+	const hollowRadius = this.proteinRadius;
+    //const color5 = new THREE.Color( 'skyblue' );
+    console.log("showing hollow")
+    console.log(`v1 ${[0, hollowHeightOffset, 0]},${[0, hollowHeight, 0]}`); 
+
+    console.log(`proteinRadius ${this.proteinRadius}, belt Radius ${this.beltRadius}`);
+	this.hollowShape = new NGL.Shape("hollowShape", { disableImpostor: true } );
+	
+
+  
+	console.log([169,169,169], hollowRadius);
+
+	
+    this.hollowShape.addCylinder( [0, hollowHeightOffset, 0], 
+				 [0, hollowHeight      , 0], 
+				 [0,0,0], hollowRadius);
+    /*
+   this.hollowShape.addCylinder( [0, this.oldPoint, 0], [0, this.pointY, 0], 
+                                 [0, 0, 0]            , hollowRadius);
+*/
+	this.hollowComp = this.stage.addComponentFromObject(this.hollowShape) 
+	this.hollowComp.addRepresentation( "hollow", { "opacity" : 0.5 } );
+}
+var extrudeSettings = {
+    amount : 2,
+    steps : 1,
+    bevelEnabled: false,
+    curveSegments: 8
+};
 
 pdbSubmit.prototype.nglEditionData = function(detList) {
     //fct to calculate the new volume and edit the crown after the change of the detergents stored in detList
