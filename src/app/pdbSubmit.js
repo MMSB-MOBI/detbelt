@@ -6,13 +6,18 @@ var blocker = require('./blocker.js');
 var sprintf = require("sprintf-js").sprintf,
     vsprintf = require("sprintf-js").vsprintf;
 
+const createPipe = require('./donuts.js').generatePipeAlong;
 // Constructor
 var pdbSubmit = function(opt) {
     var nArgs = opt ? opt : {};
     Core.call(this, nArgs);
+    /*
     this.hollowShape = null;
     this.hollowComp  = null;
+    */
     this.masked = true;
+
+    this.pipeElem = [];
 }
 pdbSubmit.prototype = Object.create(Core.prototype);
 pdbSubmit.prototype.constructor = pdbSubmit;
@@ -38,7 +43,7 @@ pdbSubmit.prototype.drawControlBox = function () {
     $(this.getNode()).find(".pdbSubmitDiv").append('<div class="ctrlBox"></div>');
     var ctrlDiv = $(this.getNode()).find(".pdbSubmitDiv .ctrlBox")[0];
     $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" id="' + turnBoxTag + '" >Set molecule spin on/off</label></div>');
-    $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" checked=' + self.masked + ' id="' + extrudeTag + '" >Mask protein volume</label></div>');
+   // $(ctrlDiv).append('<div class="checkbox"><label><input type="checkbox" checked=' + self.masked + ' id="' + extrudeTag + '" >Mask protein volume</label></div>');
     $( "#" + turnBoxTag).on('change',function(){
         if(document.getElementById(turnBoxTag).checked){self.stage.setSpin( [ 0, 1, 0 ], 0.01 )}
             else{self.stage.setSpin( [ 0, 1, 0 ], 0 )}
@@ -99,6 +104,7 @@ pdbSubmit.prototype.display = function(jsonData) {
     //create the DOM
     //send jsonFile in argument to stock his color in object dataDetergentFromJson
     var self = this;
+    console.log("OOOOO", jsonData); 
     this.divTag = 'div_'+this.idNum;
     $(this.getNode()).append('<div class="pdbSubmitDiv row" id="'+this.divTag+'">'
             + '<div class="searchBlock col-md-6">'
@@ -168,6 +174,7 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
 
 pdbSubmit.prototype.nglStart = function() {
     console.log("nglStart");
+    console.dir(NGL);
     //function to create canva and print the protein containing in fileObject
     let self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
@@ -178,6 +185,8 @@ pdbSubmit.prototype.nglStart = function() {
 
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
+            //console.log(stringBlob);
+            //console.log(o);
             o.setDefaultAssembly('');
             o.autoView();
             self.nglStructureView_noBelt = o;
@@ -208,10 +217,14 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     //data containing halfH and radius of the crown
     //fct to add the crown after the request to the server
     var self = this;
-    console.log
+    //console.log(data);
     this.pdbText = pdbText;
     this.data = data;
     this.detList = detList;
+    this.beltRadius = parseFloat(data.beltRadius);
+    this.proteinRadius = parseFloat(data.proteinRadius);
+    this.halfH = parseFloat(data.halfH);
+
     var blob = new Blob([this.pdbText],{ type:'text/plain' });
     console.log("detList", detList)
     console.log("data", data)
@@ -219,12 +232,13 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
         .then(function(o){
             o.setDefaultAssembly('');
             o.autoView();
-            self.halfH = parseFloat(self.data.halfH);
+            //self.halfH = parseFloat(self.data.halfH);
             var basis = new NGL.Matrix4();
             self.stage.viewerControls.align(basis);
             self.nglStructureView_belt = o;
-            self.beltRadius = parseFloat(self.data.beltRadius);
-            console.log("radius : "+self.beltRadius+" halfH : "+self.halfH);
+            //self.beltRadius = parseFloat(self.data.beltRadius);
+            //self.proteinRadius = parseFloat(self.data.proteinRadius);
+            console.log("radius(i/o) : "+ self.proteinRadius + '/'+self.beltRadius+" halfH : "+self.halfH);
             self.nglEditionData(self.detList);
             self.setWait("loadOFF");
             self.drawControlBox();
@@ -241,16 +255,15 @@ pdbSubmit.prototype.nglCorona = function() {
                 var ni = parseFloat(e.qt);
                 var vi = parseFloat(i.vol);
                 var v1= ni * vi;
+                console.log("BRIII", self.beltRadius)
                 self.createCylinder(self.volumeTOT,v1,i.color);
             }
         });
     });
-    if (this.masked)
-        this.createHollow();
-    
 }
 
-pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
+// NGL based version
+pdbSubmit.prototype._createCylinder = function(volumeTOT,volumeDet,color) {
     var shape = new NGL.Shape("shape", { disableImpostor: true } );
     var cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
     var pointY = this.oldPoint - cylH;
@@ -263,7 +276,48 @@ pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
    
 }
 
+/**
+   * Add a donut cylinder to the scene
+   * @param {!number} volumeTOT Total detergents pipe volume.
+   * @param {!number} volumeDet Current detergent pipe volume.
+   * @return {} Whether something occurred.
+   */
+pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
+    console.log("Draw a pipe:", volumeTOT,volumeDet,color);
+    const cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
+    const pointY = this.oldPoint - cylH;
+    
+   const { geometry, material, mesh, scene } = createPipe(
+        [0, this.oldPoint, 0],
+        this.proteinRadius, 
+        this.beltRadius,
+        [0, pointY, 0], 
+        color, 
+        undefined);
+    window.dev.geometry = geometry;
+    window.dev.material = material;
+    window.dev.mesh     = mesh;
+
+    const pipeVertex = geometry.attributes.position.array;
+    const nVertex    = geometry.attributes.position.count;
+    const pipeColor  = [].concat(...Array(nVertex).fill(color))
+                         .map((e)=> e == 0 ? e : e /255 );
+    const pipeShape = new NGL.Shape("pipeShape");
+    pipeShape.addMesh(
+	  pipeVertex,
+      pipeColor
+    );
+    const pipeShapeComp = this.stage.addComponentFromObject(pipeShape);
+    pipeShapeComp.addRepresentation("buffer");
+    pipeShapeComp.autoView();
+
+    this.pipeElem.push({pipeShapeComp, geometry, material, mesh})
+    this.oldPoint = pointY;
+}
+
+/*
 pdbSubmit.prototype.toggleHollow = function() {
+    return;
     if(this.hollowShape != null) {
         this.hollowComp.removeAllRepresentations();        
         this.stage.removeComponent(this.hollowShape);
@@ -282,18 +336,18 @@ pdbSubmit.prototype.createHollow = function() {
 	this.hollowShape = new NGL.Shape("hollowShape", { disableImpostor: true } );
     this.hollowShape.addCylinder( [0, hollowHeightOffset, 0], 
 				 [0, hollowHeight      , 0], 
-				 [0,0,0]/*[245,245,245]*/, hollowRadius);
+				 [0,0,0], hollowRadius);
 	this.hollowComp = this.stage.addComponentFromObject(this.hollowShape) 
 	this.hollowComp.addRepresentation( "hollow", { "opacity" : 0.6 } );
 }
-
+*/
 pdbSubmit.prototype.nglEditionData = function(detList) {
     //fct to calculate the new volume and edit the crown after the change of the detergents stored in detList
     self = this;
     this.detList = detList;
     this.volumeTOT = 0;
     var pi = 3.1415;
-    this.proteinRadius = parseFloat(this.data.proteinRadius);
+    //this.proteinRadius = parseFloat(this.data.proteinRadius);
     this.detList.forEach(function(e){
         var name = e.detName;
         self.dataDetergentFromJson.forEach(function(i){
@@ -306,7 +360,10 @@ pdbSubmit.prototype.nglEditionData = function(detList) {
             }
         });
     });
+    console.log("BR: " + this.beltRadius);
     this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
+    console.log("BRII: " + this.beltRadius);
+    
     $(this.volumeValueElem).html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
     this.nglCorona();
@@ -338,6 +395,8 @@ pdbSubmit.prototype.getCoronaData = function() {
 };
 
 pdbSubmit.prototype.showProt = function(opt){
+
+    console.warn(opt);
     if (opt.hasOwnProperty('fileContent')){
         this.fileContent = opt.fileContent;
         this.nglStart();

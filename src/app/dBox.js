@@ -319,7 +319,7 @@ dBox.prototype.drawSelectDet = function(dbDetAvailable) {
                 //console.log($(this).next().find('select')[0]["value"])
                 if($("advanced-sheet-handler").length === 0){
                     self.emiter.emit("askInfos",$(this).next().find('select')[0]["value"])
-                    $(self.getNode()).append("<advanced-sheet-handler nglview></advanced-sheet-handler>")
+                    $(self.getNode()).append("<div><advanced-sheet-handler nglview></advanced-sheet-handler></div>")
                 }
                 else{
                     self.emiter.emit("askInfos",$(this).next().find('select')[0]["value"])

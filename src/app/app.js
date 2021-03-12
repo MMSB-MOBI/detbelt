@@ -125,7 +125,8 @@ $(async function(){
 window.dev = {
 	'pdbSubmit' : cpSubmitBox,
 	'dBox'      : cpDetBox,
-	'download'  : cpDownloadBox
+	'download'  : cpDownloadBox,
+    'THREE'  : window.THREE
 };
 
 
@@ -152,8 +153,9 @@ window.dev = {
 
     cpSubmitBox.on("ngl_ok",function(fileContent){
         self.pdbFile = fileContent;
+        //cpSubmitBox.removeClass("ngl-only");
         cpSubmitBox.removeClass("col-xs-12");
-        cpSubmitBox.addClass("col-xs-8");
+        cpSubmitBox.addClass("col-xs-7");
         /* Here lines to know what detergents are available inside database */
         let url = SERVER_DOMAIN + "/apiDet/getallid/"
         console.log("ngl_ok")
@@ -167,14 +169,15 @@ window.dev = {
 
     cpSubmitBox.on("display",function(){
         cpSubmitBox.addClass("col-xs-12");
+        //cpSubmitBox.addClass("ngl-only");
     });
 
     cpDownloadBox.on("display",function(){
-        cpDownloadBox.addClass("col-xs-4");
+        cpDownloadBox.addClass("col-xs-5");
     });
 
     cpDetBox.on("display",function(){
-        cpDetBox.addClass("col-xs-4");
+        cpDetBox.addClass("col-xs-5");
     });
 
     cpDetBox.on("submit", function(requestPPM, detList){
@@ -187,7 +190,8 @@ window.dev = {
     });
 
     cpDetBox.on("result",function(pdbText, data, detList){
-        console.log("result");
+        console.log("result"); 
+        console.dir(data);
         cpSubmitBox.nglRefresh(pdbText, data, detList);
         cpDetBox.animationBox();
     });
@@ -238,7 +242,7 @@ window.dev = {
                         }
                     }
                     sheet.data={"data":[to_send]}
-                    sheet.pdbFile = "/pdb/pdb_deter/"+request+".pdb"
+                    sheet.pdbFile = "/pdb/"+request+".pdb"
                 })
             })
         }
