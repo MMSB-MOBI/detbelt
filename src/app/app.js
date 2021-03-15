@@ -1,4 +1,4 @@
-const SERVER_DOMAIN = 'http://detbelt-dev.ibcp.fr'; // 3001
+const SERVER_DOMAIN = 'https://detbelt.ibcp.fr'; // 3001
 var CLIENT_VERSION=0.9;
 //description of the client
 
