@@ -3,7 +3,9 @@ span.abbreviations {
     padding-top: 0.75em;
 
 }
-
+div.DeterSubmitDiv {
+	margin-bottom: 10px;
+}
 div.DeterSubmitDiv select:not([multiple]) {
     -webkit-appearance: none;
     -moz-appearance: none;
