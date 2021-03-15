@@ -267,7 +267,7 @@ window.dev = {
                     }
                 }
                 sheet.data={"data":[to_send]}
-                sheet.pdbFile = "/pdb/pdb_deter/"+request+".pdb"
+                sheet.pdbFile = "/pdb/"+request+".pdb"
             })
         }
     })
