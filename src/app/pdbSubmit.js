@@ -104,7 +104,6 @@ pdbSubmit.prototype.display = function(jsonData) {
     //create the DOM
     //send jsonFile in argument to stock his color in object dataDetergentFromJson
     var self = this;
-    console.log("OOOOO", jsonData); 
     this.divTag = 'div_'+this.idNum;
     $(this.getNode()).append('<div class="pdbSubmitDiv row" id="'+this.divTag+'">'
             + '<div class="searchBlock col-md-6">'
@@ -147,7 +146,7 @@ pdbSubmit.prototype.display = function(jsonData) {
                 }
                 else {
                     self.fileContent=reader.result;
-                    let to_show = {"fileObject": fileInput.files[0]}
+                    let to_show = {"fileObject": fileInput.files[0], "fileContent": reader.result}
                     self.showProt(to_show);
                 }
             });
@@ -183,10 +182,12 @@ pdbSubmit.prototype.nglStart = function() {
     
     const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
 
+    console.log("stringBlob", stringBlob)
+
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
             //console.log(stringBlob);
-            //console.log(o);
+            console.log("loadFile", o);
             o.setDefaultAssembly('');
             o.autoView();
             self.nglStructureView_noBelt = o;
@@ -195,13 +196,14 @@ pdbSubmit.prototype.nglStart = function() {
                 return Promise.reject("This file is not a pdb file");
             }
             else{
+                console.log("emit ngl_ok", self.fileContent); 
                 self.emiter.emit('ngl_ok',self.fileContent);
                 $('h3').remove();                                               
                 $(self.getNode()).find(".ngl_canva").addClass("display");
                 self.stage.handleResize();
             }
         }).catch( (err) => {
-            console.warn(err);
+            console.warn("loadFile error", err);
             var blockerWidget = blocker.new({root : "#main", type : "error"});
             blockerWidget.on('close', () => {                
                 location.reload();
