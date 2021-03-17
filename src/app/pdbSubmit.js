@@ -172,6 +172,18 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
 }
 
 pdbSubmit.prototype.nglStart = function() {
+
+    const is_opm = this.checkAndCleanOPMFile();
+
+    if (! is_opm){
+        const blockerWidget = blocker.new({root : "#main", type : "error"});
+        blockerWidget.on('close', () => {                
+            location.reload();
+        });
+        blockerWidget.toggle('File seems not OPM formated');
+        return; 
+    }
+
     console.log("nglStart");
     console.dir(NGL);
     //function to create canva and print the protein containing in fileObject
@@ -208,7 +220,7 @@ pdbSubmit.prototype.nglStart = function() {
             blockerWidget.on('close', () => {                
                 location.reload();
             });
-            blockerWidget.toggle();
+            blockerWidget.toggle("An error occur during pdb processing");
         });
 }
 
@@ -410,6 +422,20 @@ pdbSubmit.prototype.showProt = function(opt){
         alert("error while loading prot")
         console.error("pdbSubmit.js fileContent key not in object")
     }
+}
+
+pdbSubmit.prototype.checkAndCleanOPMFile = function(){
+    const header = this.fileContent.split("\n")[0]
+    const opm_regex = /^REMARK\s+1\/2 of bilayer thickness/g
+    const found = header.match(opm_regex)
+    if (! found) return false
+
+    //Cleaning part
+    const keep_regex = /^(ATOM|HETATM)/g
+    const kept_lines = this.fileContent.split("\n").filter(line => line.match(keep_regex))
+    this.fileContent = header + kept_lines.join('\n')
+    console.log(this.fileContent); 
+    return true; 
 }
 
 

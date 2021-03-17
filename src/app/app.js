@@ -158,7 +158,6 @@ window.dev = {
         cpSubmitBox.addClass("col-xs-7");
         /* Here lines to know what detergents are available inside database */
         let url = SERVER_DOMAIN + "/apiDet/getallid/"
-        console.log("ngl_ok")
         qwest.get(url).get(SERVER_DOMAIN + "/apiDet/sortByCategory").then( values => {
             const infos = JSON.parse(values[0][1])
             const sortByCat = JSON.parse(values[1][1])
