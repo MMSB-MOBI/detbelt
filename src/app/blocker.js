@@ -24,7 +24,7 @@ Blocker.prototype.on = function (event, fn){
     this._on[event] = fn;
 };
 
-Blocker.prototype.toggle = function (){
+Blocker.prototype.toggle = function (message){
 
     $(this.getNode()).html(
     `
@@ -39,7 +39,7 @@ Blocker.prototype.toggle = function (){
           <h4 class="modal-title">Modal Header</h4>
         </div>
         <div class="modal-body">
-          <p>An error occur during pdb processing</p>
+          <p>${message}</p>
           <p>Please contact: <a href="mailto:contact-detbelt@ibcp.fr">
           contact-detbelt@ibcp.fr
           </a></p>
