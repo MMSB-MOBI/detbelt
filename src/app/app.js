@@ -75,21 +75,10 @@ var createFooter = function (elem){
     $(elem).append('<img src="img/logo-uni-lyon.png" style=" width: 13.5em;position: absolute; top: -18px; right:0.25em;"/>')
 }
 
-/*const getSnapshot = async function(){
-    const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
-    qwest.get(snapshot_url).then((xhr, response) => {
-        console.log("qwest get snapshot")
-        const det_volume = JSON.parse(response)
-        return det_volume
-    })
-    
-}*/
-
 function getSnapshot(){
     return new Promise(resolve => {
         const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
         qwest.get(snapshot_url).then((xhr, response) => {
-            console.log("qwest get snapshot")
             const det_volume = JSON.parse(response)
             resolve(det_volume)
         })
@@ -98,27 +87,6 @@ function getSnapshot(){
 
 $(async function(){
     var self = this;
-/*
-        var listHelp = '<div class="downloadTooltip"><ul class="fa-ul">'
-                    +    '<li><span style="color:steelblue;margin-left: -1.5em;font-weight:500;padding-right:1.5em;">PDB</span><span class="helpLiSpan"> coordinates file</span></li>'
-                    +    '<li><span style="color:steelblue;margin-left: -1.5em;font-weight:500">PyMOL</span><span class="helpLiSpan"> visualization PYMOL script</span></li>'
-                    +    '<li><i class="fa fa-li fa-file-text-o" style="color:steelblue"></i> <span class="helpLiSpan" style="padding-left:2.2em;">File containing the belt caracteristics</span></li>'
-                    +    '<li><i class="fa fa-li fa-file-archive-o" style="color:steelblue"></i><span class="helpLiSpan" style="padding-left:2.2em;">PDB and PYMOL files ZIP archive</span></li>'
-                    +    '</ul>'
-                    + '</div>';
-
-            $("body").append(listHelp);
-            return;
-
-
-//--DVL DET BOX
-    cpDetBox = dBox.new({root : "#main",idNum : 2});
-    cpDetBox.display(jsonFile);
-    console.log("early exit");
-    return;
-*/
-//-----
-//
     const cpSubmitBox = pdbSubmit.new({root : "#main", idNum : 1 });
     const cpDetBox = dBox.new({root : "#main",idNum : 2});
     const cpDownloadBox = downloadBox.new({root : "#main", idNum : 3})
@@ -133,10 +101,8 @@ window.dev = {
     createHeader("body .page-header");
     createFooter("body div.footer");
     const detergents_json_snapshot = await getSnapshot()
-    console.log("detergent_json_snapshot", detergents_json_snapshot)
 
     socket.on("results", function (data) {
-        console.log("results");
         cpDetBox.dataTransfert(data);
     });
 
@@ -180,35 +146,26 @@ window.dev = {
     });
 
     cpDetBox.on("submit", function(requestPPM, detList){
-        console.log("detBox submit")
-        console.log(detergents_json_snapshot)
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList, "deterVol" : detergents_json_snapshot};
-        console.log(data); 
         cpSubmitBox.setWait("loadON");
         socket.emit("submission", data);    
     });
 
     cpDetBox.on("result",function(pdbText, data, detList){
-        console.log("result"); 
-        console.dir(data);
         cpSubmitBox.nglRefresh(pdbText, data, detList);
         cpDetBox.animationBox();
     });
 
     cpDetBox.on("moved",function(){
-        console.log("event moved");
         cpDownloadBox.display();
     });
 
     cpDetBox.on("edition",function(detList){
-        console.log("lance Edition");
         cpSubmitBox.removeOldCorona(detList);
     });
 
     cpDownloadBox.on("clickDL", function(type){
-        console.log("passe par app.js");
          var data = cpSubmitBox.getCoronaData();
-         console.log(data);
          socket.emit(type, data);
     });
 
@@ -305,13 +262,5 @@ window.dev = {
       })
     
      
-/*      console.log(result.detail)
-    sb.addEventListener('clickedOnResult',function(result){
-        console.log(result.detail)
-        // What do we do next ? -> show it inside the input (means we have to add a method to modify the content of it)? delete the component ? Depend on the user but need to add Methods
-        // User choice : here we decide to hide the component to the user after we send the selected item.
-
-    }) 
-    */
 });
 

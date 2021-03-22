@@ -36,7 +36,6 @@ Core.prototype.setFrame = function (type) {
 
 Core.prototype.getNode = function() {
     if (! this.node) {
-        console.log("Adding div " + 'div.widget#w_' + this.idNum + " to " + this.nodeRoot);
         var string = this.scaffold();
         $(this.nodeRoot).append(string);
         this.node = $('div.widget#w_' + this.idNum)[0];
@@ -50,11 +49,6 @@ Core.prototype.display = function(event, callback) {
         $(this.nodeRoot).append(string);
         this.node = $('div.widget#w_' + this.idNum)[0];
     }
-
-    /*
-    console.log("i display id num " + this.idNum);
-    console.log(this.scaffold());
-    */
 
     $(this.node).show();
 };

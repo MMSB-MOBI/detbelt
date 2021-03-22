@@ -111,7 +111,6 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
         }
         
         let curl = spawn('curl', ['-X', 'GET', url]);
-        console.log(url)
         curl.stdout.on('data', (data) => {
             chunkRes += data.toString('utf8');
         })
@@ -119,10 +118,7 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
             chunkError+= data.toString('utf8');
         })
         curl.on('close', (code) => {
-            //console.log('--------------')
-            //console.log(chunkRes)
             res.send(chunkRes)
-            //console.log('--------------')
         })
     })
 
@@ -144,7 +140,6 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
 
         
         let curl = spawn('curl', ['-X', 'GET', url]);
-        console.log(url)
         curl.stdout.on('data', (data) => {
             chunkRes += data.toString('utf8');
         })
@@ -152,10 +147,7 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
             chunkError+= data.toString('utf8');
         })
         curl.on('close', (code) => {
-            //console.log('--------------')
-            //console.log(chunkRes)
             res.send(chunkRes)
-            //console.log('--------------')
         })
     })
 
@@ -187,7 +179,6 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
             });
         })
         .on("downloadPdb", function (newData) {
-            console.log("on download pdb")
             var mode = 'pdbFile';
             downloader(mode, newData, PDB_RESULTS).on('pdbAvailable', function (pathFile) {
                 socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});

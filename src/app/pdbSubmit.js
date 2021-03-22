@@ -25,7 +25,6 @@ pdbSubmit.prototype.constructor = pdbSubmit;
 pdbSubmit.prototype.error = function (msg){
     var h = $(this.getNode()).find(".pdbSubmitDiv").outerHeight();
     var w = $(this.getNode()).find(".pdbSubmitDiv").outerWidth();
-    console.log(h + ' ' + w);
     $(this.getNode()).find(".pdbSubmitDiv").empty();
     $(this.getNode()).find(".pdbSubmitDiv").outerHeight(h);
     $(this.getNode()).find(".pdbSubmitDiv").outerWidth(w);
@@ -140,7 +139,6 @@ pdbSubmit.prototype.display = function(jsonData) {
                 var taille=fileInput.files[0].size;
 
                 if (taille==0){
-                    console.log("error : empty file");
                     alert("empty file");
                     reader.abort();
                 }
@@ -152,7 +150,6 @@ pdbSubmit.prototype.display = function(jsonData) {
             });
 
             reader.addEventListener('error', function() {
-                console.log("Error in file reader "+ fileInput.files[0].name +": "+ reader.result);
                 alert("Error in file reader "+ fileInput.files[0].name +": "+ reader.result);
             });
 
@@ -184,8 +181,6 @@ pdbSubmit.prototype.nglStart = function() {
         return; 
     }
 
-    console.log("nglStart");
-    console.dir(NGL);
     //function to create canva and print the protein containing in fileObject
     let self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
@@ -194,12 +189,8 @@ pdbSubmit.prototype.nglStart = function() {
     
     const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
 
-    console.log("stringBlob", stringBlob)
-
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
-            //console.log(stringBlob);
-            console.log("loadFile", o);
             o.setDefaultAssembly('');
             o.autoView();
             self.nglStructureView_noBelt = o;
@@ -208,14 +199,12 @@ pdbSubmit.prototype.nglStart = function() {
                 return Promise.reject("This file is not a pdb file");
             }
             else{
-                console.log("emit ngl_ok", self.fileContent); 
                 self.emiter.emit('ngl_ok',self.fileContent);
                 $('h3').remove();                                               
                 $(self.getNode()).find(".ngl_canva").addClass("display");
                 self.stage.handleResize();
             }
         }).catch( (err) => {
-            console.warn("loadFile error", err);
             var blockerWidget = blocker.new({root : "#main", type : "error"});
             blockerWidget.on('close', () => {                
                 location.reload();
@@ -225,7 +214,6 @@ pdbSubmit.prototype.nglStart = function() {
 }
 
 pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
-    console.log("NGL refresh");
     
     //pdbText is the pdb file containing the prot oriented
     //data containing halfH and radius of the crown
@@ -240,8 +228,6 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     this.halfH = parseFloat(data.halfH);
 
     var blob = new Blob([this.pdbText],{ type:'text/plain' });
-    console.log("detList", detList)
-    console.log("data", data)
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
             o.setDefaultAssembly('');
@@ -252,7 +238,6 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
             self.nglStructureView_belt = o;
             //self.beltRadius = parseFloat(self.data.beltRadius);
             //self.proteinRadius = parseFloat(self.data.proteinRadius);
-            console.log("radius(i/o) : "+ self.proteinRadius + '/'+self.beltRadius+" halfH : "+self.halfH);
             self.nglEditionData(self.detList);
             self.setWait("loadOFF");
             self.drawControlBox();
@@ -269,7 +254,6 @@ pdbSubmit.prototype.nglCorona = function() {
                 var ni = parseFloat(e.qt);
                 var vi = parseFloat(i.vol);
                 var v1= ni * vi;
-                console.log("BRIII", self.beltRadius)
                 self.createCylinder(self.volumeTOT,v1,i.color);
             }
         });
@@ -284,7 +268,6 @@ pdbSubmit.prototype._createCylinder = function(volumeTOT,volumeDet,color) {
     shape.addCylinder([0, this.oldPoint, 0], [0, pointY, 0], color, this.beltRadius);
     var shapeComp = this.stage.addComponentFromObject(shape);
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
-    console.log("Color", color);
     this.oldPoint = pointY;
     this.nglStructureView_belt.autoView();
    
@@ -297,7 +280,6 @@ pdbSubmit.prototype._createCylinder = function(volumeTOT,volumeDet,color) {
    * @return {} Whether something occurred.
    */
 pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
-    console.log("Draw a pipe:", volumeTOT,volumeDet,color);
     const cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
     const pointY = this.oldPoint - cylH;
     
@@ -367,16 +349,12 @@ pdbSubmit.prototype.nglEditionData = function(detList) {
         self.dataDetergentFromJson.forEach(function(i){
             if(name===i.name){
                 var ni = parseFloat(e.qt);
-                console.log("ni", ni)
                 var vi = parseFloat(i.vol);
-                console.log("vi", vi)
                 self.volumeTOT += ni * vi;
             }
         });
     });
-    console.log("BR: " + this.beltRadius);
     this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
-    console.log("BRII: " + this.beltRadius);
     
     $(this.volumeValueElem).html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>' );
     $(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
@@ -410,7 +388,6 @@ pdbSubmit.prototype.getCoronaData = function() {
 
 pdbSubmit.prototype.showProt = function(opt){
 
-    console.warn(opt);
     if (opt.hasOwnProperty('fileContent')){
         this.fileContent = opt.fileContent;
         this.nglStart();
@@ -434,7 +411,6 @@ pdbSubmit.prototype.checkAndCleanOPMFile = function(){
     const keep_regex = /^(ATOM|HETATM)/g
     const kept_lines = this.fileContent.split("\n").filter(line => line.match(keep_regex))
     this.fileContent = header + kept_lines.join('\n')
-    console.log(this.fileContent); 
     return true; 
 }
 

@@ -22,14 +22,11 @@ dBox.prototype.toggleSubmissionButtonState = function (){
 
 dBox.prototype.animationBox = function(){
     var self = this;
-    console.log("bouge cette boite");
     $(this.getNode()).animate({
         //position: absolute,
         top: "100",
     }, 1500, function() {
-        //console.dir(self);
         self.emiter.emit("moved");
-        console.log("boite a terminé de bouger");
         $(self.getNode()).css('top', 0);
        // $(self.getNode()).offset({ top : 320 });
     });
@@ -44,7 +41,6 @@ dBox.prototype.validationAndListDet = function(){
     $(self.getNode()).find('select').parent().each(function(){
         var qt = $(this).find('input.dNumber').val();
         if(qt===""){
-            console.log("empty field");
             validateField = false;
             $(this).find(" .dNumber").addClass("error");
         } else if (! re.test(qt)) {
@@ -119,7 +115,6 @@ dBox.prototype.drawButtonRequest = function(){
         $(this).addClass('disabled');
         $(this).off("click");
         $(self.getNode()).find('.newDet').addClass('disabled');
-        console.log("detBox drawButtonRequest requestPPM", self.requestPPM); 
         self.emiter.emit("submit", self.requestPPM , self.detList);
     });
 }
@@ -128,13 +123,10 @@ dBox.prototype.dataTransfert = function(data){
     //when the server send the reponse send event result and draw buttonEdition and buttonRefresh
     //data is the var containing the reponse of the server
     var self = this;
-    console.log("données corona transférées : " );
-    console.dir(data.data);
     var pdbText = data.fileContent;
     this.coronaData = data.data;
     self.modeEdition = true;
     self.emiter.emit("result", pdbText, this.coronaData, self.detList);
-    console.log("a émis result");
     $(self.getNode()).find(".buttonRequest").remove();
     $(self.getNode()).find('.ppmCheckBoxDiv').remove();
     $(self.getNode()).find(".buttonGo").append('<button type="button" class="btn btn-success btn-sm buttonEdition">Recompute the belt</button>');
@@ -147,7 +139,6 @@ dBox.prototype.dataTransfert = function(data){
         var validQt = self.validationAndListDet();
         if (!validQt) return false;
         self.emiter.emit("edition", self.detList);
-        console.log("a émis edition");
     });
     $(self.getNode()).find(".buttonRefresh").click(function(){
         window.location.reload();
@@ -181,8 +172,6 @@ dBox.prototype.display = function(jsonFile,dbDetAvailable, sortByCategory) {
 
 
 dBox.prototype.addAvailable = function (detLitt) {
-    console.log("addAvailable");
-    console.log(detLitt);
 
     //this function addAvailable (in the object availableDet) the detergent who is giving in argument
     var detExist = false;
@@ -202,14 +191,11 @@ dBox.prototype.addAvailable = function (detLitt) {
             });
             return ok;
         }).each(function(){
-            console.log('Reinjecting in a select');
             if( $(this).find('option').filter(function(){return $(this).text() == detLitt.category; }).length  == 0 ) {
-                console.log("writing " + detLitt.category);
                  $(this).append('<option disabled>' + detLitt.category + '</option>'
                               + '<option category="' + detLitt.category + '" value=' + detLitt.name + '>' + detLitt.name + '</option>');
                  return;
             }
-            console.log("Appending");
             $(this).find('option').filter(function(){ return $(this).text() == detLitt.category; })
                     .after('<option category=' + detLitt.category + ' value=' + detLitt.name + '>' + detLitt.name + '</option>');
         });
@@ -218,8 +204,6 @@ dBox.prototype.addAvailable = function (detLitt) {
 
 dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
     var self = this;
-    console.log("delAvailable");
-    console.log(detLitt);
 
     // Remove detergent name from buffer
     var m = this.availableDet[detLitt.category].indexOf(detLitt.name);
@@ -231,8 +215,6 @@ dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
         return $(this).attr("category"); })
             .get()
             .filter( function(value, index, self) {return self.indexOf(value) === index;});
-
-        console.log("-->");  console.dir(currSelCatList);
 
      var currSelCatName = detLitt.category;
 
@@ -255,30 +237,10 @@ dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
                         // Treating "detergent" options
                         $(this).find('option:not(:disabled)').filter(function(i){
                                 if($(this).is(':selected')) return false;
-                            /*console.log($(this));
-                            console.log($(this).attr('value') + " === " + detLitt.name);
-                            console.log($(this).attr('value') === detLitt.name);*/
                              return $(this).attr('value') === detLitt.name;
                         }).remove();
                      });
 
-/*
-    console.log("Trying to remove " + detLitt.name);
-    $(this.getNode()).find('select.selDetName option')
-        .filter(function(i){
-            if($(this).is(':selected')) return false;
-            return $(this).attr('value') === detLitt.name;
-        })
-        .remove();
-    var self = this;
-    //var currSelCatName = $(this.getNode()).find('select.selDetName option:selected').attr("category");
-
-
-    $(this.getNode()).find('select.selDetName option:disabled').filter(function(i) {
-        var catName = $(this).text();
-        return self.availableDet[catName].length == 0 && catName !== currSelCatName;}
-        ).remove();
-        */
     }
 
 
@@ -310,13 +272,11 @@ dBox.prototype.drawSelectDet = function(dbDetAvailable) {
             .find('.deleteDet').click(function(){
                 var detName = $(this).siblings('select').find('option:selected').text();
                 var detCat = $(this).siblings('select').find('option:selected').attr('category');
-                console.log("Adding " + detName + ' , ' + detCat);
                 self.addAvailable({name : detName, category : detCat });
                 $(this).parents().eq(1).remove();
                 self.toggleSubmissionButtonState();
             });
         $(self.getNode()).find(".enterDet").find('#'+ boxID +' .infos').click(function(){
-                //console.log($(this).next().find('select')[0]["value"])
                 if($("advanced-sheet-handler").length === 0){
                     self.emiter.emit("askInfos",$(this).next().find('select')[0]["value"])
                     $(self.getNode()).append("<div><advanced-sheet-handler nglview></advanced-sheet-handler></div>")
@@ -361,16 +321,8 @@ dBox.prototype.drawSelectDet = function(dbDetAvailable) {
             var detSelected = $(this).find('option:selected').text();
             var catSelected = $(this).find('option:selected').attr('category');
 
-            console.log("Changing From");
-            console.log(prevDetSelected + " " + prevCatSelected);
-            console.log("To");
-            console.log(detSelected + " " + catSelected);
-
             self.delAvailable({ name : detSelected, category : catSelected }, prevCatSelected);
-            //return;
-            //return;
             self.addAvailable({ name : prevDetSelected, category : prevCatSelected});
-            console.log("fixed");
         });
     });
 

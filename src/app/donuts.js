@@ -12,14 +12,6 @@ const THREE = require('three/build/three.module.js');
    * @return { {object, object, object, object } } {geometry, material, mesh, scene} webGL pipe elements + scene.
    */
   function generatePipeAlong(oCoor, innerR, outerR, oTranslate, color, scene) {
-    console.log("generatePipeALong");
-
-    console.log("iCI",oCoor)
-    console.log("iCII", innerR)
-    console.log("iCIII", outerR)
-    console.log("iCIV", oTranslate)
-    console.log("iCV",  color)
-    console.log("iCVI", scene)
 
     color = 0xffa500;
 
@@ -67,7 +59,6 @@ const THREE = require('three/build/three.module.js');
    */
 function removePipe({ geometry, material, mesh, scene }) {
     const d = scene.remove(mesh);
-    console.dir(d);
     geometry.dispose();
     material.dispose();
 }

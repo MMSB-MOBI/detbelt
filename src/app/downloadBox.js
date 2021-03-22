@@ -11,7 +11,6 @@ downloadBox.prototype.constructor = downloadBox;
 downloadBox.prototype.display = function() {
     //display of downloadBox and the download button
     var self = this;
-    console.log("display download box");
     var listHelp = '<div class="downloadTooltip"><ul class="fa-ul">'
                     +    '<li class="pdbLi"> PDB coordinates file</li>'
                     +    '<li> <i class="fa fa-2x fa-li fa-file-code-o">   </i> PYMOL script</li>'
@@ -45,12 +44,6 @@ downloadBox.prototype.display = function() {
                 +'<div class="btn btn-primary btnLink btnData" style="width: 5.5em;"> <i class="fa fa-2x fa-file-o"></i></div>'
                 +'<div class="btn btn-primary btnLink btnZip" style="width: 5.5em;"> <i class="fa fa-2x fa-folder-open-o"></i></div>'
 
-                /*
-                    +'<span><button type="button" data-toggle="tooltip" data-placement="bottom" title="'+pdbHelp+'" class="btn btn-info btn-sm btnLink btnPdb"> <i class="fa fa-2x fa-pinterest-p" aria-hidden="true"></i> </button> </span>'
-                    +'<span><button type="button" data-toggle="tooltip" data-placement="bottom" title="'+scriptHelp+'" class="btn btn-info btn-sm btnLink btnScript"> <i class="fa fa-2x fa-file-code-o" aria-hidden="true"></i> </button></span>'
-                    +'<span><button type="button" data-toggle="tooltip" data-placement="bottom" title="'+resultHelp+'" class="btn btn-info btn-sm btnLink btnData"> <i class="fa fa-2x fa-file-text-o" aria-hidden="true"></i> </button> </span>'
-                    +'<span><button type="button" data-toggle="tooltip" data-placement="bottom" title="'+zipHelp+'" class="btn btn-info btn-sm btnLink btnZip"> <i class="fa fa-2x fa-file-archive-o" aria-hidden="true"></i> </button> </span>'
-                */
                 +'</div>'
                 +'<div class="liensDownload">'
                 +'</div>'
@@ -61,25 +54,21 @@ downloadBox.prototype.display = function() {
     this.emiter.emit('display');
 
     $(this.getNode()).find(".btnPdb").click(function(){
-        console.log("clic sur btnZip");
         $(this).attr("disabled",true);
         self.emiter.emit("clickDL", "downloadPdb");
     });
 
     $(this.getNode()).find(".btnScript").click(function(){
-        console.log("clic sur btnScript");
         $(this).attr("disabled",true);
         self.emiter.emit("clickDL","downloadPymol");
     });
 
     $(this.getNode()).find(".btnData").click(function(){
-        console.log("clic sur btnData");
         $(this).attr("disabled",true);
         self.emiter.emit("clickDL","downloadData");
     });
 
     $(this.getNode()).find(".btnZip").click(function(){
-        console.log("clic sur btnZip");
         $(this).attr("disabled",true);
         self.emiter.emit("clickDL","downloadZip");
     });
@@ -89,13 +78,9 @@ downloadBox.prototype.display = function() {
 }
 
 downloadBox.prototype.downloadFile = function(data) {
-    console.log("downloadFile");
-    console.log(data.path)
     $(".liensDownload").append('<a type="text/plain" href='+ data.path +'>.</a>');
-    //console.log($(".liensDownload > a:last"));
     $(".liensDownload > a:last").get(0).click();
     $(".liensDownload > a:last").remove();
-    console.log(data.mode);
     switch(data.mode) {
         case "pymolScript":
             $(".btnScript").attr("disabled",false);
