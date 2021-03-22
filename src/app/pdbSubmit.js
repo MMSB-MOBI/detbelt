@@ -104,7 +104,6 @@ pdbSubmit.prototype.display = function(jsonData) {
     //create the DOM
     //send jsonFile in argument to stock his color in object dataDetergentFromJson
     var self = this;
-    console.log("OOOOO", jsonData); 
     this.divTag = 'div_'+this.idNum;
     $(this.getNode()).append('<div class="pdbSubmitDiv row" id="'+this.divTag+'">'
             + '<div class="searchBlock col-md-6">'
@@ -147,7 +146,7 @@ pdbSubmit.prototype.display = function(jsonData) {
                 }
                 else {
                     self.fileContent=reader.result;
-                    let to_show = {"fileObject": fileInput.files[0]}
+                    let to_show = {"fileObject": fileInput.files[0], "fileContent": reader.result}
                     self.showProt(to_show);
                 }
             });
@@ -173,6 +172,18 @@ pdbSubmit.prototype.removeClass = function(uneClass) {
 }
 
 pdbSubmit.prototype.nglStart = function() {
+
+    const is_opm = this.checkAndCleanOPMFile();
+
+    if (! is_opm){
+        const blockerWidget = blocker.new({root : "#main", type : "error"});
+        blockerWidget.on('close', () => {                
+            location.reload();
+        });
+        blockerWidget.toggle('File seems not OPM formated');
+        return; 
+    }
+
     console.log("nglStart");
     console.dir(NGL);
     //function to create canva and print the protein containing in fileObject
@@ -183,10 +194,12 @@ pdbSubmit.prototype.nglStart = function() {
     
     const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
 
+    console.log("stringBlob", stringBlob)
+
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
             //console.log(stringBlob);
-            //console.log(o);
+            console.log("loadFile", o);
             o.setDefaultAssembly('');
             o.autoView();
             self.nglStructureView_noBelt = o;
@@ -195,18 +208,19 @@ pdbSubmit.prototype.nglStart = function() {
                 return Promise.reject("This file is not a pdb file");
             }
             else{
+                console.log("emit ngl_ok", self.fileContent); 
                 self.emiter.emit('ngl_ok',self.fileContent);
                 $('h3').remove();                                               
                 $(self.getNode()).find(".ngl_canva").addClass("display");
                 self.stage.handleResize();
             }
         }).catch( (err) => {
-            console.warn(err);
+            console.warn("loadFile error", err);
             var blockerWidget = blocker.new({root : "#main", type : "error"});
             blockerWidget.on('close', () => {                
                 location.reload();
             });
-            blockerWidget.toggle();
+            blockerWidget.toggle("An error occur during pdb processing");
         });
 }
 
@@ -408,6 +422,20 @@ pdbSubmit.prototype.showProt = function(opt){
         alert("error while loading prot")
         console.error("pdbSubmit.js fileContent key not in object")
     }
+}
+
+pdbSubmit.prototype.checkAndCleanOPMFile = function(){
+    const header = this.fileContent.split("\n")[0]
+    const opm_regex = /^REMARK\s+1\/2 of bilayer thickness/g
+    const found = header.match(opm_regex)
+    if (! found) return false
+
+    //Cleaning part
+    const keep_regex = /^(ATOM|HETATM)/g
+    const kept_lines = this.fileContent.split("\n").filter(line => line.match(keep_regex))
+    this.fileContent = header + kept_lines.join('\n')
+    console.log(this.fileContent); 
+    return true; 
 }
 
 

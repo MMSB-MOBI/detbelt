@@ -24,7 +24,7 @@ Blocker.prototype.on = function (event, fn){
     this._on[event] = fn;
 };
 
-Blocker.prototype.toggle = function (){
+Blocker.prototype.toggle = function (message){
 
     $(this.getNode()).html(
     `
@@ -36,10 +36,10 @@ Blocker.prototype.toggle = function (){
         style="background-color: #b2222238;">
         <div class="modal-header" style="border-bottom: 1px solid firebrick;">
           <button type="button" class="close" data-dismiss="modal">&times;</button>          
-          <h4 class="modal-title">Modal Header</h4>
+          <h4 class="modal-title">Error</h4>
         </div>
         <div class="modal-body">
-          <p>An error occur during pdb processing</p>
+          <p>${message}</p>
           <p>Please contact: <a href="mailto:contact-detbelt@ibcp.fr">
           contact-detbelt@ibcp.fr
           </a></p>
