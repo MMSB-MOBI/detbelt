@@ -4,8 +4,9 @@ colnames(X)="radius"
 X$radius=sqrt(X$radius)
 
 # estimate density
-D=density(X$radius)
-
+#D=density(X$radius)
+# set bandwidth to avoid having very small peaks in the density
+D=density(X$radius,bw=3)
 
 get_right_peak=function(X)
     {
