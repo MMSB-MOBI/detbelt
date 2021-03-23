@@ -433,8 +433,7 @@ pdbSubmit.prototype.checkAndCleanOPMFile = function(){
     //Cleaning part
     const keep_regex = /^(ATOM|HETATM)/g
     const kept_lines = this.fileContent.split("\n").filter(line => line.match(keep_regex))
-    this.fileContent = header + kept_lines.join('\n')
-    console.log(this.fileContent); 
+    this.fileContent = header + "\n" + kept_lines.join('\n')
     return true; 
 }
 
