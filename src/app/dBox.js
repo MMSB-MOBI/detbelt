@@ -22,7 +22,6 @@ dBox.prototype.toggleSubmissionButtonState = function (){
 
 dBox.prototype.animationBox = function(){
     var self = this;
-    console.log("bouge cette boite");
     $(this.getNode()).animate({
         //position: absolute,
         top: "100",
@@ -232,7 +231,7 @@ dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
             .get()
             .filter( function(value, index, self) {return self.indexOf(value) === index;});
 
-        console.log("-->");  console.dir(currSelCatList);
+       // console.log("-->");  console.dir(currSelCatList);
 
      var currSelCatName = detLitt.category;
 
@@ -310,7 +309,7 @@ dBox.prototype.drawSelectDet = function(dbDetAvailable) {
             .find('.deleteDet').click(function(){
                 var detName = $(this).siblings('select').find('option:selected').text();
                 var detCat = $(this).siblings('select').find('option:selected').attr('category');
-                console.log("Adding " + detName + ' , ' + detCat);
+                //console.log("Adding " + detName + ' , ' + detCat);
                 self.addAvailable({name : detName, category : detCat });
                 $(this).parents().eq(1).remove();
                 self.toggleSubmissionButtonState();

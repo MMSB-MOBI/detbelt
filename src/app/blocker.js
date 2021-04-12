@@ -54,7 +54,7 @@ Blocker.prototype.toggle = function (message){
     `);
     let self = this;
     let ref = $(this.getNode());
-    console.log(ref);
+   // console.log(ref);
     $(this.getNode()).css("display", "block")
     $(this.getNode()).find("#myModal").css("display", "block");
     $(this.getNode()).find("button").on("click", ()=>  {

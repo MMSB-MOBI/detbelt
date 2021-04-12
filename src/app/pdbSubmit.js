@@ -18,6 +18,8 @@ var pdbSubmit = function(opt) {
     this.masked = true;
 
     this.pipeElem = [];
+
+    this.customInnerRadius = undefined;
 }
 pdbSubmit.prototype = Object.create(Core.prototype);
 pdbSubmit.prototype.constructor = pdbSubmit;
@@ -25,7 +27,7 @@ pdbSubmit.prototype.constructor = pdbSubmit;
 pdbSubmit.prototype.error = function (msg){
     var h = $(this.getNode()).find(".pdbSubmitDiv").outerHeight();
     var w = $(this.getNode()).find(".pdbSubmitDiv").outerWidth();
-    console.log(h + ' ' + w);
+   // console.log(h + ' ' + w);
     $(this.getNode()).find(".pdbSubmitDiv").empty();
     $(this.getNode()).find(".pdbSubmitDiv").outerHeight(h);
     $(this.getNode()).find(".pdbSubmitDiv").outerWidth(w);
@@ -48,10 +50,11 @@ pdbSubmit.prototype.drawControlBox = function () {
         if(document.getElementById(turnBoxTag).checked){self.stage.setSpin( [ 0, 1, 0 ], 0.01 )}
             else{self.stage.setSpin( [ 0, 1, 0 ], 0 )}
     });
-    $( "#" + extrudeTag).on('change', (e) => {
+   /* $( "#" + extrudeTag).on('change', (e) => {
         self.masked = e.target.checked;
         self.toggleHollow();
     });
+    */
 };
 
 pdbSubmit.prototype.drawResultBox = function () {
@@ -59,26 +62,68 @@ pdbSubmit.prototype.drawResultBox = function () {
     var self = this;
     $(self.getNode()).find(".pdbSubmitDiv").append('<div class="resultSummary"></div>');
     var resultDiv = $(self.getNode()).find(".pdbSubmitDiv .resultSummary")[0];
-
+    const default_sliderValue = self.data.proteinRadius;
+    const min_sliderValue = 0;
+    const max_sliderValue = parseInt(2 * default_sliderValue);
     $(resultDiv).append('<table class="table"><thead><tr><th colspan="2">Detergent Belt characteristics</th></tr></thead><tbody>'
         + '<tr>'
-        + '<td>Half-height <span class="notEditableResults">' + sprintf("%2.1f", self.data.halfH) + ' &#8491</span></td>'
-        + '<td>Volume <span class="editableResults">' + sprintf("%2f", self.data.volumeCorona) + ' &#8491<sup>3</sup></span></td>'
+        + '<td>Half-height <span class="editableResults">' + sprintf("%2f", self.data.halfH) + ' &#8491</span></td>'
+        + '<td>Volume <span class="editableResults v-volume">' + sprintf("%2f", self.data.volumeCorona) + ' &#8491<sup>3</sup></span></td>'
         + '</tr>'
         + '<tr>'
-        + '<td>Inner radius <span class="notEditableResults">' + sprintf("%2.1f", self.data.proteinRadius) + ' &#8491</span></td>'
-        + '<td>Outer radius <span class="editableResults">' + sprintf("%2.1f", self.data.beltRadius) + ' &#8491</span></td>'
+        + '<td>AHS<sup>&#8224; </sup><span class="editableResults">'+ self.data.ahs +' &#8491<sup>2</sup></span></td>'
+        + '<td>Outer radius <span class="editableResults o-radius">' + sprintf("%2.1f", self.data.beltRadius) + ' &#8491</span></td>'
         + '</tr>'
         + '<tr>'
-        + '<td colspan="2">AHS <span class="editableResults"> '+ self.data.ahs +' &#8491<sup>2</sup></span></td>'
         + '</tr>'
-        + '</tbody></table>');
+        + '<tr>'
+        + '<td colspan="2" class="slider-td">' 
+        + '<div class="slider-value-display-container"><span id="slider-value-display">Current inner radius ' 
+        + '<span>' + default_sliderValue + '&#8491</span></span></div>'
+        + '<div id="slide-holder"> <span>' +  min_sliderValue + '</span>' 
+        + '<div class="slidecontainer">'
+        + '<input type="range" min="' + min_sliderValue + '" max="'
+        + max_sliderValue + '" value="'
+        +  default_sliderValue + '" class="slider" id="belt-radius-range">'
+        + '</div>'
+        + '<span>' +  max_sliderValue + '</span></div>'        
+        + '</td>'
+        + '<tr><td colspan="2" class="btn-holder"><button type="button" class="slider-reset btn btn-warning">Set inner radius to default</button></td></tr>'
+        + '</tbody><tfoot><td colspan="2">&#8224;<span> :Protein <span class="acron">A</span>'
+        + 'ccessible <span class="acron">H</span>ydrophobic <span class="acron">S</span>urface</span></td></tfoot></table>');
 
     // Store Volume and crow radius dom element for further modifications
     var elems = $(resultDiv).find('span.editableResults');
-    this.volumeValueElem = elems[0];
-    this.crownValueElem = elems[1];
+    //this.volumeValueElem = $(this.getNode()).find('.v-volume')[0] 
+    //this.crownValueElem = $(this.getNode()).find('.o-radius')[0]
 
+    let sliderBelt = $(resultDiv).find('#belt-radius-range');
+
+    let sliderValueSpan = $(resultDiv).find('#slider-value-display span');
+    let cValue = default_sliderValue
+
+    console.error(sliderBelt);
+    //console.error(this.volumeValueElem);
+    $(sliderBelt).on('change', (e)=>{ 
+        console.log('coucou');
+        cValue = e.target.value;
+        self.customInnerRadius = parseFloat(cValue);
+        $(sliderValueSpan).html(`${cValue} &#8491`);
+        self.removeOldCorona(undefined);
+    });
+    $(resultDiv).find('.slider-reset').on('click', ()=> {
+        console.log("Reset");
+        //sliderBelt.attr('value', self.proteinRadius);
+        sliderBelt.val(self.proteinRadius);
+       // console.log(sliderBelt.attr('value'));
+       // console.log(typeof(self.proteinRadius));
+        self.customInnerRadius = parseFloat(self.proteinRadius);
+        $(sliderValueSpan).html(`${self.customInnerRadius} &#8491`);
+        self.removeOldCorona(undefined);
+        //self.customInnerRadius = self.proteinRadius;
+        // update outside radius 
+    });
+    
 
 };
 
@@ -140,7 +185,7 @@ pdbSubmit.prototype.display = function(jsonData) {
                 var taille=fileInput.files[0].size;
 
                 if (taille==0){
-                    console.log("error : empty file");
+                    //console.log("error : empty file");
                     alert("empty file");
                     reader.abort();
                 }
@@ -152,7 +197,7 @@ pdbSubmit.prototype.display = function(jsonData) {
             });
 
             reader.addEventListener('error', function() {
-                console.log("Error in file reader "+ fileInput.files[0].name +": "+ reader.result);
+                //console.log("Error in file reader "+ fileInput.files[0].name +": "+ reader.result);
                 alert("Error in file reader "+ fileInput.files[0].name +": "+ reader.result);
             });
 
@@ -184,8 +229,9 @@ pdbSubmit.prototype.nglStart = function() {
         return; 
     }
 
-    console.log("nglStart");
+  /*  console.log("nglStart");
     console.dir(NGL);
+    */
     //function to create canva and print the protein containing in fileObject
     let self = this;
     this.stage = new NGL.Stage( "ngl_canva_"+self.idNum, { backgroundColor: "lightgrey" } );    //crer canevas
@@ -194,12 +240,12 @@ pdbSubmit.prototype.nglStart = function() {
     
     const stringBlob = new Blob( [ self.fileContent ], { type: 'text/plain'} );
 
-    console.log("stringBlob", stringBlob)
+    //console.log("stringBlob", stringBlob)
 
     this.stage.loadFile(stringBlob, { defaultRepresentation: true, ext: "pdb" })
         .then(function (o) { // Ajouter des elements, modifier le canvas avant affichage.
             //console.log(stringBlob);
-            console.log("loadFile", o);
+      //      console.log("loadFile", o);
             o.setDefaultAssembly('');
             o.autoView();
             self.nglStructureView_noBelt = o;
@@ -208,7 +254,7 @@ pdbSubmit.prototype.nglStart = function() {
                 return Promise.reject("This file is not a pdb file");
             }
             else{
-                console.log("emit ngl_ok", self.fileContent); 
+           //     console.log("emit ngl_ok", self.fileContent); 
                 self.emiter.emit('ngl_ok',self.fileContent);
                 $('h3').remove();                                               
                 $(self.getNode()).find(".ngl_canva").addClass("display");
@@ -225,7 +271,7 @@ pdbSubmit.prototype.nglStart = function() {
 }
 
 pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
-    console.log("NGL refresh");
+  //  console.log("NGL refresh");
     
     //pdbText is the pdb file containing the prot oriented
     //data containing halfH and radius of the crown
@@ -240,8 +286,8 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
     this.halfH = parseFloat(data.halfH);
 
     var blob = new Blob([this.pdbText],{ type:'text/plain' });
-    console.log("detList", detList)
-    console.log("data", data)
+    //console.log("detList", detList)
+    //console.log("data", data)
     self.stage.loadFile(blob, { defaultRepresentation: true, ext: 'pdb' })
         .then(function(o){
             o.setDefaultAssembly('');
@@ -252,7 +298,7 @@ pdbSubmit.prototype.nglRefresh = function(pdbText, data, detList) {
             self.nglStructureView_belt = o;
             //self.beltRadius = parseFloat(self.data.beltRadius);
             //self.proteinRadius = parseFloat(self.data.proteinRadius);
-            console.log("radius(i/o) : "+ self.proteinRadius + '/'+self.beltRadius+" halfH : "+self.halfH);
+       //     console.log("radius(i/o) : "+ self.proteinRadius + '/'+self.beltRadius+" halfH : "+self.halfH);
             self.nglEditionData(self.detList);
             self.setWait("loadOFF");
             self.drawControlBox();
@@ -269,7 +315,7 @@ pdbSubmit.prototype.nglCorona = function() {
                 var ni = parseFloat(e.qt);
                 var vi = parseFloat(i.vol);
                 var v1= ni * vi;
-                console.log("BRIII", self.beltRadius)
+                //console.log("BRIII", self.beltRadius)
                 self.createCylinder(self.volumeTOT,v1,i.color);
             }
         });
@@ -284,7 +330,7 @@ pdbSubmit.prototype._createCylinder = function(volumeTOT,volumeDet,color) {
     shape.addCylinder([0, this.oldPoint, 0], [0, pointY, 0], color, this.beltRadius);
     var shapeComp = this.stage.addComponentFromObject(shape);
     shapeComp.addRepresentation( "belt", { "opacity" : 0.5 } );
-    console.log("Color", color);
+   // console.log("Color", color);
     this.oldPoint = pointY;
     this.nglStructureView_belt.autoView();
    
@@ -301,9 +347,10 @@ pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
     const cylH = ((2*this.halfH)*volumeDet)/volumeTOT;
     const pointY = this.oldPoint - cylH;
     
-   const { geometry, material, mesh, scene } = createPipe(
+    const innerRadius = this.customInnerRadius != undefined ? this.customInnerRadius : this.proteinRadius;
+    const { geometry, material, mesh, scene } = createPipe(
         [0, this.oldPoint, 0],
-        this.proteinRadius, 
+        innerRadius, 
         this.beltRadius,
         [0, pointY, 0], 
         color, 
@@ -329,40 +376,16 @@ pdbSubmit.prototype.createCylinder = function(volumeTOT,volumeDet,color) {
     this.oldPoint = pointY;
 }
 
-/*
-pdbSubmit.prototype.toggleHollow = function() {
-    return;
-    if(this.hollowShape != null) {
-        this.hollowComp.removeAllRepresentations();        
-        this.stage.removeComponent(this.hollowShape);
-        this.hollowComp = null;
-        this.hollowShape = null; // Could be Memory leak need to dispose materials/mesh
-        return;
-    };
-    this.createHollow();
-}
-
-pdbSubmit.prototype.createHollow = function() {
-   
-    const hollowHeight = this.halfH + 0.25;
-	const hollowHeightOffset = hollowHeight * (-1);
-	const hollowRadius = this.proteinRadius;
-	this.hollowShape = new NGL.Shape("hollowShape", { disableImpostor: true } );
-    this.hollowShape.addCylinder( [0, hollowHeightOffset, 0], 
-				 [0, hollowHeight      , 0], 
-				 [0,0,0], hollowRadius);
-	this.hollowComp = this.stage.addComponentFromObject(this.hollowShape) 
-	this.hollowComp.addRepresentation( "hollow", { "opacity" : 0.6 } );
-}
-*/
-pdbSubmit.prototype.nglEditionData = function(detList) {
+pdbSubmit.prototype.nglEditionData = function(_detList) {
+    console.error("nglEditionData");
     //fct to calculate the new volume and edit the crown after the change of the detergents stored in detList
     self = this;
-    this.detList = detList;
-    this.volumeTOT = 0;
+    self.detList = _detList != undefined ? _detList : self.detList;
+
+    self.volumeTOT = 0;
     var pi = 3.1415;
     //this.proteinRadius = parseFloat(this.data.proteinRadius);
-    this.detList.forEach(function(e){
+    self.detList.forEach(function(e){
         var name = e.detName;
         self.dataDetergentFromJson.forEach(function(i){
             if(name===i.name){
@@ -374,17 +397,27 @@ pdbSubmit.prototype.nglEditionData = function(detList) {
             }
         });
     });
-    console.log("BR: " + this.beltRadius);
-    this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(this.proteinRadius,2) );
-    console.log("BRII: " + this.beltRadius);
-    
-    $(this.volumeValueElem).html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>' );
-    $(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
+
+    const innerRadius = self.customInnerRadius != undefined ? self.customInnerRadius : self.proteinRadius;
+    //console.log("BR: " + this.beltRadius);
+    this.beltRadius=Math.sqrt( this.volumeTOT / (pi * (this.halfH * 2)) + Math.pow(innerRadius, 2) );
+
+    //$(this.volumeValueElem).html( sprintf("%2", this.volumeTOT) + ' &#8491<sup>3</sup>' );
+    //$(this.crownValueElem).html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
+    console.error(this.volumeTOT);
+    //$(this.getNode()).find('.v-volume').html( sprintf("%2", this.volumeTOT) + ' &#8491<sup>3</sup>' );
+    if($(this.getNode()).find('.v-volume').length > 0) {
+        $(this.getNode()).find('.v-volume').html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>');
+        $(this.getNode()).find('.o-radius').html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
+    }
     this.nglCorona();
 };
 
-pdbSubmit.prototype.removeOldCorona = function(detList) {
-    self = this;
+pdbSubmit.prototype.removeOldCorona = function(_detList) {
+    const self = this;
+   
+    console.warn("removeOldCorona");
+    
     var iToDel = [];
     this.stage.compList.forEach(function(e, i){
         if(i === 0) return;
@@ -394,7 +427,7 @@ pdbSubmit.prototype.removeOldCorona = function(detList) {
     iToDel.forEach(function(e){
         self.stage.removeComponent(self.stage.compList[e]);
     });
-    this.nglEditionData(detList);
+    this.nglEditionData(_detList);
 }
 
 pdbSubmit.prototype.getCoronaData = function() {
@@ -410,7 +443,7 @@ pdbSubmit.prototype.getCoronaData = function() {
 
 pdbSubmit.prototype.showProt = function(opt){
 
-    console.warn(opt);
+  //  console.warn(opt);
     if (opt.hasOwnProperty('fileContent')){
         this.fileContent = opt.fileContent;
         this.nglStart();
@@ -420,7 +453,7 @@ pdbSubmit.prototype.showProt = function(opt){
     }
     else{
         alert("error while loading prot")
-        console.error("pdbSubmit.js fileContent key not in object")
+      //  console.error("pdbSubmit.js fileContent key not in object")
     }
 }
 

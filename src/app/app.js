@@ -20,7 +20,7 @@ console.log("Startin app");
 //var jsonFile = "assets/detergents.json";
 var socket = io.connect(SERVER_DOMAIN);
 socket.on('connect', function(){
-    console.log("connecté");
+    //console.log("connecté");
 });
 
 let qwest = require('qwest');
@@ -88,8 +88,7 @@ var createFooter = function (elem){
 function getSnapshot(){
     return new Promise(resolve => {
         const snapshot_url = SERVER_DOMAIN + "/apiDet/dbSnapshot"
-        qwest.get(snapshot_url).then((xhr, response) => {
-            console.log("qwest get snapshot")
+        qwest.get(snapshot_url).then((xhr, response) => {           
             const det_volume = JSON.parse(response)
             resolve(det_volume)
         })
@@ -133,10 +132,10 @@ window.dev = {
     createHeader("body .page-header");
     createFooter("body div.footer");
     const detergents_json_snapshot = await getSnapshot()
-    console.log("detergent_json_snapshot", detergents_json_snapshot)
+    //console.log("detergent_json_snapshot", detergents_json_snapshot)
 
     socket.on("results", function (data) {
-        console.log("results");
+       // console.log("results");
         cpDetBox.dataTransfert(data);
     });
 
@@ -180,35 +179,35 @@ window.dev = {
     });
 
     cpDetBox.on("submit", function(requestPPM, detList){
-        console.log("detBox submit")
-        console.log(detergents_json_snapshot)
+      //  console.log("detBox submit")
+      //  console.log(detergents_json_snapshot)
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList, "deterVol" : detergents_json_snapshot};
-        console.log(data); 
+      //  console.log(data); 
         cpSubmitBox.setWait("loadON");
         socket.emit("submission", data);    
     });
 
     cpDetBox.on("result",function(pdbText, data, detList){
         console.log("result"); 
-        console.dir(data);
+      //  console.dir(data);
         cpSubmitBox.nglRefresh(pdbText, data, detList);
         cpDetBox.animationBox();
     });
 
     cpDetBox.on("moved",function(){
-        console.log("event moved");
+       // console.log("event moved");
         cpDownloadBox.display();
     });
 
     cpDetBox.on("edition",function(detList){
-        console.log("lance Edition");
+     //   console.log("lance Edition");
         cpSubmitBox.removeOldCorona(detList);
     });
 
     cpDownloadBox.on("clickDL", function(type){
-        console.log("passe par app.js");
+      //  console.log("passe par app.js");
          var data = cpSubmitBox.getCoronaData();
-         console.log(data);
+      //   console.log(data);
          socket.emit(type, data);
     });
 

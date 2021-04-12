@@ -12,6 +12,7 @@ const THREE = require('three/build/three.module.js');
    * @return { {object, object, object, object } } {geometry, material, mesh, scene} webGL pipe elements + scene.
    */
   function generatePipeAlong(oCoor, innerR, outerR, oTranslate, color, scene) {
+    /*
     console.log("generatePipeALong");
 
     console.log("iCI",oCoor)
@@ -20,7 +21,7 @@ const THREE = require('three/build/three.module.js');
     console.log("iCIV", oTranslate)
     console.log("iCV",  color)
     console.log("iCVI", scene)
-
+*/
     color = 0xffa500;
 
     const curvePath = new THREE.CatmullRomCurve3( [
