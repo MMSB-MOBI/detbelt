@@ -139,6 +139,10 @@ div.pdbSubmitDiv div.resultSummary table td.btn-holder {
   padding-bottom: 1.1em;
 }
 
+div.pdbSubmitDiv span.o-radius {
+  padding-left: 0px !important;
+}
+
 .slidecontainer {
   width: 100%; /* Width of the outside container */
   padding-left: 0.5em;

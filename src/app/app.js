@@ -287,7 +287,11 @@ window.dev = {
 
     })
 
+    let alreadyClicked = false;
     document.addEventListener('clickedOnResult',function(result){
+        if (alreadyClicked)
+            return;
+        alreadyClicked = true;
         const url = SERVER_DOMAIN + "/apiWhite/pdb/" + result.detail; 
         qwest.get(url).then(function(xhr,response){
           const JSONres = JSON.parse(response); 

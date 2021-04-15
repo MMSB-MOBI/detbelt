@@ -72,14 +72,14 @@ pdbSubmit.prototype.drawResultBox = function () {
         + '</tr>'
         + '<tr>'
         + '<td>AHS<sup>&#8224; </sup><span class="editableResults">'+ self.data.ahs +' &#8491<sup>2</sup></span></td>'
-        + '<td>Outer radius <span class="editableResults o-radius">' + sprintf("%2.1f", self.data.beltRadius) + ' &#8491</span></td>'
+        + '<td>Belt thickness <span class="editableResults b-thickness">' + sprintf("%2.1f", self.data.beltRadius - self.data.proteinRadius) + ' &#8491</span></td>'
         + '</tr>'
         + '<tr>'
         + '</tr>'
         + '<tr>'
         + '<td colspan="2" class="slider-td">' 
-        + '<div class="slider-value-display-container"><span id="slider-value-display">Current inner radius ' 
-        + '<span>' + default_sliderValue + '&#8491</span></span></div>'
+        + '<div class="slider-value-display-container"><span id="slider-value-display">inner | outer radii ' 
+        + '<span>' + sprintf("%2.1f",default_sliderValue) + ' |</span><span class="o-radius">' + sprintf("%2.1f", self.data.beltRadius) + '&#8491</span></span></div>'
         + '<div id="slide-holder"> <span>' +  min_sliderValue + '</span>' 
         + '<div class="slidecontainer">'
         + '<input type="range" min="' + min_sliderValue + '" max="'
@@ -105,10 +105,9 @@ pdbSubmit.prototype.drawResultBox = function () {
     console.error(sliderBelt);
     //console.error(this.volumeValueElem);
     $(sliderBelt).on('change', (e)=>{ 
-        console.log('coucou');
         cValue = e.target.value;
         self.customInnerRadius = parseFloat(cValue);
-        $(sliderValueSpan).html(`${cValue} &#8491`);
+        $(sliderValueSpan).html(`${sprintf("%2.1f",self.customInnerRadius)} |`);
         self.removeOldCorona(undefined);
     });
     $(resultDiv).find('.slider-reset').on('click', ()=> {
@@ -118,7 +117,7 @@ pdbSubmit.prototype.drawResultBox = function () {
        // console.log(sliderBelt.attr('value'));
        // console.log(typeof(self.proteinRadius));
         self.customInnerRadius = parseFloat(self.proteinRadius);
-        $(sliderValueSpan).html(`${self.customInnerRadius} &#8491`);
+        $(sliderValueSpan).html(`${sprintf("%2.1f",self.customInnerRadius)} |`);
         self.removeOldCorona(undefined);
         //self.customInnerRadius = self.proteinRadius;
         // update outside radius 
@@ -163,6 +162,13 @@ pdbSubmit.prototype.display = function(jsonData) {
             + '</div>');
     this.emiter.emit('display'); //event for give at submitBox compenent the size col-xs-12
 
+   /* $(this.getNode()).on("click", function(e) {
+        console.warn(e);
+        console.warn(e.target);
+        console.warn(this);
+        //ul.dPContent
+    });
+    */
     self.dataDetergentFromJson = [];
     for (var category in jsonData.data) {
         jsonData.data[category].forEach(function(d){
@@ -409,6 +415,7 @@ pdbSubmit.prototype.nglEditionData = function(_detList) {
     if($(this.getNode()).find('.v-volume').length > 0) {
         $(this.getNode()).find('.v-volume').html( sprintf("%2.1f", this.volumeTOT) + ' &#8491<sup>3</sup>');
         $(this.getNode()).find('.o-radius').html( sprintf("%2.1f", this.beltRadius) + ' &#8491');
+        $(this.getNode()).find('.b-thickness').html( sprintf("%2.1f", this.beltRadius - innerRadius) + ' &#8491');
     }
     this.nglCorona();
 };
