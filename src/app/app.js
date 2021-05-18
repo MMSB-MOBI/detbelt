@@ -28,7 +28,8 @@ let qwest = require('qwest');
 var createHeader = function (elem) {
 
     $(elem).append('<div class="welcomeHead"><img class="icon" src="img/detBelt.png"/>Welcome to the Det.Belt Server </div>'
-            + '<div class="tutorial"><a href="tutorial" target="_blank"><span>Tutorial</span></a></div>'
+            + '<div class="tutorial"><a href="gallery" target="_blank"><span>Gallery</span></a></div>'
+            + '<div class="gallery"><a href="tutorial" target="_blank"><span>Tutorial</span></a></div>'
             + '<div class="headContent">The Det.Belt server allows you to have a broad idea of the detergent belt around your membrane protein. '
             + 'The detergent is represented as a transparent hollow cylinder around the hydrophobic region of the protein. '
             + 'This approximation is particularly fitted to biochemical studies to give an overall idea of what is expected '
@@ -71,7 +72,9 @@ var createHeader = function (elem) {
 var createFooter = function (elem){
     $(elem).find('div p').text('DetBelt Project client v' + CLIENT_VERSION);
     $(elem).append('<img src="img/logo-cnrs.png" style=" width: 6.5em;position: absolute; top: 0.45em; left:0.25em;"/>');
-    $(elem).append('<img src="img/logo_MMSB_200.png" style=" width: 6.5em;position: absolute; top: 0.45em; left:8em;"/>');
+    $(elem).append('<a href="https://mmsb.cnrs.fr/en/" target="_blank">' 
+    + '<img src="img/logo_MMSB_200.png" style=" width: 6.5em;position: absolute; top: 0.45em; left:8em;"/>'
+    + '</a>');
     $(elem).append('<img src="img/logo-uni-lyon.png" style=" width: 13.5em;position: absolute; top: -18px; right:0.25em;"/>')
 }
 

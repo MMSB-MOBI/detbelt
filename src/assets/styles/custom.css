@@ -95,9 +95,36 @@ div.tutorial span {
     font-weight : bold;
 }
 
-div.tutorial a {
+div.tutorial:hover a {
     color: inherit;
     text-decoration: none;
+}
+
+
+div.gallery {
+    color : black;
+    position: absolute;
+    right: 12%;
+    top: 4em;
+    border : solid 1px black;
+    border-radius : 4px 4px 4px 4px;
+    padding : 4px 10px 4px 10px;
+}
+
+div.gallery span {
+    margin-right: 0.75em;
+    vertical-align: 0.3em;
+    font-weight : bold;
+}
+
+div.gallery:hover a {
+    color: inherit;
+    text-decoration: none;
+}
+
+div.gallery:hover{
+    color : whiteSmoke;
+    border : solid 1px whiteSmoke;
 }
 
 div.footer .container {

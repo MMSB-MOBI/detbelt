@@ -40,9 +40,6 @@ Blocker.prototype.toggle = function (message){
         </div>
         <div class="modal-body">
           <p>${message}</p>
-          <p>Please contact: <a href="mailto:contact-detbelt@ibcp.fr">
-          contact-detbelt@ibcp.fr
-          </a></p>
         </div>
         <div class="modal-footer"
         style="border-top: 1px solid firebrick;">

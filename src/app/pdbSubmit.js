@@ -231,7 +231,7 @@ pdbSubmit.prototype.nglStart = function() {
         blockerWidget.on('close', () => {                
             location.reload();
         });
-        blockerWidget.toggle('File seems not OPM formated');
+        blockerWidget.toggle('File seems not OPM formated\nPlease submit your file to the PPM server first for pre-orientation: <a href=https://opm.phar.umich.edu/ppm_server> https://opm.phar.umich.edu/ppm_server </a>');
         return; 
     }
 

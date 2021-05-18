@@ -73,6 +73,9 @@ var setClientRoute = function(app, downloadRoute) {
     app.get('/tutorial', function(req, res) {
              res.sendFile(__dirname + '/src/tutorial.html');
     });
+    app.get('/gallery', function(req, res) {
+        res.sendFile(__dirname + '/src/gallery.html');
+    });
     app.use('/modules', express.static(__dirname + '/node_modules'));
     app.use('/pdb', express.static(__dirname + 
     '/node_modules/advanced-sheet-handler/dist/collection/pdb'));
