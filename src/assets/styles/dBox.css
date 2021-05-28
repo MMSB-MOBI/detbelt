@@ -3,9 +3,7 @@ span.abbreviations {
     padding-top: 0.75em;
 
 }
-div.DeterSubmitDiv {
-	margin-bottom: 10px;
-}
+
 div.DeterSubmitDiv select:not([multiple]) {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -31,7 +29,7 @@ div.DeterSubmitDiv {
     border-radius: 12px 12px 12px 12px;
     padding: 1em;
     padding-top: 0.5em;
-    margin-top:1em;
+	padding-right:2em; 
 
     /*-webkit-transition: top 4s;
     -moz-transition: top 4s;
@@ -96,4 +94,27 @@ div.DeterSubmitDiv div.enterDet div.input-group button.infos{
 
 div.DeterSubmitDiv div.enterDet div.input-group button.infos i.fa-info{
 	margin-right: -4px
+}
+
+.deterContainer{
+	display:flex; 
+	gap: 1rem; 
+	margin-top: 1rem; 
+	margin-bottom: 1rem; 
+	flex-direction: column;
+}
+
+.deterHint{
+	background-color: whitesmoke;
+    border-radius: 12px 12px 12px 12px;
+    padding: 1em;
+    padding-top: 0.5em;
+}
+
+.hintText {
+	margin: 0.5rem; 
+}
+
+.hintTitle {
+	font-weight:bold;
 }

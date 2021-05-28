@@ -64,21 +64,32 @@ dBox.prototype.drawEmptySectionAndButton = function(dbDetAvailable) {
     var self = this;
     $(this.getNode()).
         append(
-            '<div class="DeterSubmitDiv">'
+        '<div class="deterContainer">'
+            +  '<div class="deterHint">'
+                + '<p class="hintText hintTitle"> Based on detergent quantification we suggest : </p>'
+                + '<p class="hintText"> 400 DDM around 12 transmembrane helices </p>'
+                + '<p class="hintText"> 200 DDM around 7 transmembrane helices </p>'
+                + '<p class="hintText"> See <a href="gallery" target="_blank"> gallery </a> </p>' 
+            +'</div>'
+            + '<div class="DeterSubmitDiv">'
                 + '<h3>Choose your detergent set</h3>'
                 + '<div class="enterDet"></div>'
                 + '<div class="buttonNew"></div>'
-            + '</div>');
-
+            + '</div>'
+           
+        + '</div>');
     $(this.getNode()).find(".buttonNew").append('<button type="button" class="btn btn-primary btn-sm newDet">Add a new detergent</button><span class="abbreviations pull-right"><a href="assets/abbreviations.pdf" target="_blank">abbreviations</a></span>');
     this.emiter.emit('display');
+    self.drawSelectDet(dbDetAvailable);
+    self.drawButtonRequest();
+    self.toggleSubmissionButtonState();
+    
     $(this.getNode()).find(".newDet").click(function(){         // if we click on the newDet button
-        if (self.availableDetNumber() == 0) return;
-
         self.drawSelectDet(dbDetAvailable);
         self.drawButtonRequest();
         self.toggleSubmissionButtonState();
     });
+
 }
 
 dBox.prototype.availableDetNumber = function () {
@@ -162,14 +173,14 @@ dBox.prototype.mapper = function(opt) {
 
 };
 
-dBox.prototype.display = function(jsonFile,dbDetAvailable, sortByCategory) {
-    //this function browse the JSONFile and store his data in the variable dataDetergentFromJson.
-    //create the variable availableData
+dBox.prototype.display = function(dbDetAvailable, sortByCategory) {
     if (this.drawn) return;
     var self = this;
     this.boxNumber = 0;
     //this.availableDet = [];
     //this.detergentRefLitt = {};
+    console.log("dBox display", dbDetAvailable); 
+    console.log("dBox display", sortByCategory); 
     self.availableDet = sortByCategory
        // return;
         // Initial component graphical state
@@ -283,6 +294,7 @@ dBox.prototype.delAvailable = function (detLitt, sCategoryPrev) {
 
 dBox.prototype.drawSelectDet = function(dbDetAvailable) {
     //draw an selectDet box from availableDet
+    console.log("POUET2", dbDetAvailable)
     var self = this;
     var boxID = 'divSelectDet_' + this.boxNumber;
     this.boxNumber++;
@@ -328,6 +340,16 @@ dBox.prototype.drawSelectDet = function(dbDetAvailable) {
 
 
     var defaultDet = null;
+    console.log("detAvailable", self.availableDet)
+    
+    const firstDet = "DDM"
+    const firstCategory = "maltosides"
+
+    //Reorganize availableDet to display firstDet in first
+    const _list =  self.availableDet[firstCategory]
+    _list.splice(_list.indexOf(firstDet), 1)
+    _list.unshift(firstDet)
+
     $(self.getNode()).find('#' + boxID + ' .selDetName').each(function(){
         var elem = this;
         for (var category in self.availableDet) {
@@ -337,7 +359,7 @@ dBox.prototype.drawSelectDet = function(dbDetAvailable) {
             self.availableDet[category].forEach(function(e, i){
                 if(dbDetAvailable.includes(e)){
                     defaultDet = !defaultDet ? { 'name' : e, 'category' : category } : defaultDet;
-                    $(elem).append('<option value=' + e +' category="' + category + '">' + e + '</option>');                    
+                    $(elem).append('<option value=' + e +' category="' + category + '">' + e + '</option>');                
                 }
 
             });

@@ -163,7 +163,8 @@ window.dev = {
         qwest.get(url).get(SERVER_DOMAIN + "/apiDet/sortByCategory").then( values => {
             const infos = JSON.parse(values[0][1])
             const sortByCat = JSON.parse(values[1][1])
-            cpDetBox.display(detergents_json_snapshot,infos.data, sortByCat.data);
+            console.log("YOOOOO", sortByCat.data); 
+            cpDetBox.display(infos.data, sortByCat.data);
         })
         
     });
