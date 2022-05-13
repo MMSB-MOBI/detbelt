@@ -1,20 +1,32 @@
 // corona server implementation
-
-var jsonfile = require('jsonfile');
-var jobManager = require('nslurmardocklegacy');
+const { simpleflake } = require('simpleflakes');
 var uuid = require('node-uuid');
 var fs = require('fs');
 var events = require ('events');
 var zipper = require('adm-zip');
 var JSON = require('JSON');
 
+const { PromiseManager } = require('msjob-aspromise')
+
+
 
 // variables
 var dictJobManager;
-var tagTask = 'corona';
+let jobmanagerClient; 
+var tagTask = '';
 
-var jobManagerIsStarted = false;
+/*
+Create inputs/results directory
+*/
+const getRandomDirFromCache = (id) => {
+    const base = dictJobManager.managerSettings.forceCache;
 
+    const dir = base + id;
+
+    fs.mkdirSync(dir, { recursive: true });
+
+    return dir
+}
 
 /*
 * Create the string containing the parameters of the user (quantity and detergent)
@@ -49,11 +61,13 @@ var deterVolDumper = function (list) {
 /*
 * Initialize the job manager thanks to the settings in @bean
 */
-var initBackend = function(bean) {
+var initBackend = async function(bean) {
     if (! bean) console.log('ERROR in initBackend : no bean specified');
     //console.log("Initializing Job Manager");
-    jobManager.start(bean.managerSettings);
     dictJobManager = bean;
+    jobmanagerClient = new PromiseManager(bean.managerSettings.tcp, bean.managerSettings.port)
+    await jobmanagerClient.start()
+    
     //console.dir(dictJobManager);
 }
 
@@ -118,44 +132,13 @@ var configJob = function (mode, cluster, exportVar, modules, coreScript, idTask)
     if (! coreScript) console.log('ERROR in configJob : no coreScript specified');
     if (! idTask) console.log('ERROR in configJob : no idTask specified');
     var jobOpt = {
-        'id' : idTask,
-        'tWall' : '0-01:00',
         'script' : coreScript,
         'modules' : modules,
-        'exportVar' : exportVar
+        'exportVar' : exportVar,
+        'jobProfile' : dictJobManager.managerSettings.jobProfile,
+        'sysSettingsKey' : dictJobManager.managerSettings.sysSettings
     };
-    // parameters depending to the mode and the cluster
-    if (mode === 'gpu') {
-        jobOpt['nCores'] = 1;
-        jobOpt['gres'] = 'gpu:1';
-        if (cluster === 'arwen') {
-            jobOpt['partition'] = 'gpu_dp';
-            jobOpt['qos'] = 'gpu';
-        } else if (cluster === 'arwen-dev') {
-            jobOpt['partition'] = 'gpu';
-            jobOpt['qos'] = 'gpu';
-            jobOpt['gid'] = 'ws_users';
-            jobOpt['uid'] = 'ws_corona';
-        } else {
-            console.log("ERROR in configJob : cluster not recognized. It must be \"arwen\" or \"arwen-dev\" !");
-        }
-    } else if (mode === 'cpu') {
-        jobOpt['nCores'] = 1;
-        // no gres option on CPU
-        if (cluster === 'arwen') {
-            jobOpt['partition'] = 'mpi-mobi';
-            jobOpt['qos'] = 'mpi-mobi';
-        } else if (cluster === 'arwen-dev') {
-            jobOpt['partition'] = 'ws-dev';
-            jobOpt['qos'] = 'ws-dev';
-            jobOpt['gid'] = 'ws_users';
-            jobOpt['uid'] = 'ws_corona';
-        } else {
-            console.log("ERROR in configJob : cluster not recognized. It must be \"arwen\" or \"arwen-dev\" !");
-        }
-    } else {
-        console.log("ERROR in configJob : mode not recognized. It must be \"cpu\" or \"gpu\" !");
-    }
+
     return jobOpt;
 }
 
@@ -166,10 +149,10 @@ var configJob = function (mode, cluster, exportVar, modules, coreScript, idTask)
 *   @cacheDir [string] : cache directory where user files will be written
 *   @requestPPM [boolean] : indicate if we need to run PPM (true) or not (false)
 */
-var configJobCorona = function (cacheDir, requestPPM) {
+var configJobCorona = function (cacheDir, id, requestPPM) {
     if (! cacheDir) console.log('ERROR in configJobCorona : no cacheDir specified');
     if (! requestPPM) console.log('ERROR in configJobCorona : no requestPPM specified');
-    var idTask = tagTask + 'Task_' + uuid.v4();
+    var idTask = id
     var exportVar = {}, modules = [], coreScript;
 
     if (requestPPM) { // with PPM
@@ -209,54 +192,43 @@ var configJobCorona = function (cacheDir, requestPPM) {
 var compute = function (data) {
     if (! data) throw 'ERROR in compute() function : no data specified';
     var emitter = new events.EventEmitter();
-    var cacheDir = jobManager.cacheDir();
+    const id = simpleflake().toString()
+    const cacheDir = getRandomDirFromCache(id)
+
     var deterData;
 
     // configure the job
-    var jobOpt = configJobCorona(cacheDir, data.requestPPM);
+    var jobOpt = configJobCorona(cacheDir, id, data.requestPPM);
 
     // write the pdbFile and the detergent file in the cacheDir
     if (typeof data.deterData === 'object') { deterData = detergentDumper(data.deterData); }
     else { deterData = data.deterData; }
     try {
-        fs.mkdirSync(cacheDir + '/' + jobOpt.id + '_inputs/');
+        fs.mkdirSync(cacheDir + '/' + id + '_inputs/');
         fs.writeFileSync(jobOpt.exportVar.pdbFile, data.fileContent);
         fs.writeFileSync(jobOpt.exportVar.detergentFile, deterData);
         fs.writeFileSync(jobOpt.exportVar.detergentVolumes, JSON.stringify(data.deterVol))
     } catch (err) { throw err; }
 
     // run
-    var j = jobManager.push(jobOpt);
-    j.on('completed', function (stdout, stderr, jobObject){
-        if (stderr) {
-            stderr.on('data', function (buf){
-                var err = buf.toString()
-                console.log("stderr content:");
-                console.log(err);
-                emitter.emit('stderrContent', err);
-            });
-        } else {
-            var results = '';
-            stdout
-            .on('data', function (buf){
-                results += buf.toString();
-            })
-            .on('end', function (){
-                var jsonRes = JSON.parse(results);
-                console.log(jsonRes);
-                jsonRes = readResults(jsonRes.resultsPath);
-                console.log('jobCompletion');
-                emitter.emit('jobCompletion', jsonRes, jobObject);
-            });
-        }
-    })
-    .on('error',function (err, j){
-        console.log("job " + j.id + " : " + err);
-        emitter.emit('error', err, j.id);
-    })
-    .on('lostJob', function (err, j) {
-        console.log("job " + j.id + " : " + err);
-    });
+    jobmanagerClient.push(jobOpt)
+        .then(res => {
+            try {
+                const path = JSON.parse(res).resultsPath
+                console.log("JOB DONE", path)
+                const jsonRes = readResults(path)
+                emitter.emit('jobCompletion', jsonRes)
+            } catch(e) {
+                console.error(e)
+                emitter.emit('stderrContent', "error while parsing results")
+            }
+            
+            
+        })
+        .catch(e => {
+            console.error("JOB ERROR", e)
+            emitter.emit('stderrContent', "detbelt was unable to proceed your molecule")
+        })
     return emitter;
 }
 

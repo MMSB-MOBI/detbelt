@@ -174,7 +174,7 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
         socket
         .on("submission", function (data) {
             worker(data)
-            .on('jobCompletion', function (jsonRes, jobObject) {
+            .on('jobCompletion', function (jsonRes) {
                 console.log("jobCompleted")
                 PDB_RESULTS = jsonRes; 
                 socket.emit('results', PDB_RESULTS);
