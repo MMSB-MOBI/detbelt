@@ -211,7 +211,7 @@ pdbSubmit.prototype.display = function(jsonData) {
         });
     };
 
-    _drawButton($(this.getNode()).find(".pdbSubmitDiv")[0]);
+    _drawButton($(this.getNode()).find("#insertFile")[0]);
 }
 
 pdbSubmit.prototype.addClass = function(uneClass) {
@@ -264,6 +264,7 @@ pdbSubmit.prototype.nglStart = function() {
                 self.emiter.emit('ngl_ok',self.fileContent);
                 $('h3').remove();                                               
                 $(self.getNode()).find(".ngl_canva").addClass("display");
+		$(self.getNode()).find(".pdbSubmitDiv").addClass("pouet");
                 self.stage.handleResize();
             }
         }).catch( (err) => {

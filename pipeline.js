@@ -166,11 +166,11 @@ var configJobCorona = function (cacheDir, id, requestPPM) {
     exportVar['pdbFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.pdb';
     exportVar['detergentFile'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '.detergent';
     exportVar['detergentVolumes'] = cacheDir + '/' + idTask + '_inputs/' + idTask + '_det_volume.json';
-    exportVar['orientForDisplay'] = dictJobManager.scriptVariables.BIN_DIR + '/rotateDirty.pl';
+    exportVar['orientForDisplay'] = dictJobManager.scriptVariables.BIN_DIR + '/rotateDirty.py';
     exportVar['calculateVolTot'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateVolTot.py';
     exportVar['calculateRadius'] = dictJobManager.scriptVariables.BIN_DIR + '/calculateRadius.R';
-    modules.push('naccess');
-    modules.push('R');
+    modules.push('naccess_ws3');
+    modules.push('R_ws3');
 
     var jobOpt = configJob('cpu', 'arwen-dev', exportVar, modules, coreScript, idTask);
     //console.log(jobOpt);

@@ -18,9 +18,12 @@ import "../assets/styles/app.css"
 console.log("Startin app");
 
 //var jsonFile = "assets/detergents.json";
-var socket = io.connect(SERVER_DOMAIN);
+const socket = io.connect(SERVER_DOMAIN);
 socket.on('connect', function(){
-    //console.log("connecté");
+    console.log("socket connected to server domain");
+    //socket.emit("pouet")
+    //console.log("after pouet emit")
+
 });
 
 let qwest = require('qwest');
@@ -163,7 +166,6 @@ window.dev = {
         qwest.get(url).get(SERVER_DOMAIN + "/apiDet/sortByCategory").then( values => {
             const infos = JSON.parse(values[0][1])
             const sortByCat = JSON.parse(values[1][1])
-            console.log("YOOOOO", sortByCat.data); 
             cpDetBox.display(infos.data, sortByCat.data);
         })
         
@@ -183,7 +185,7 @@ window.dev = {
     });
 
     cpDetBox.on("submit", function(requestPPM, detList){
-      //  console.log("detBox submit")
+      console.log("detBox submit")
       //  console.log(detergents_json_snapshot)
         var data = {"fileContent" : self.pdbFile, "requestPPM" : requestPPM , "deterData" : detList, "deterVol" : detergents_json_snapshot};
       //  console.log(data); 

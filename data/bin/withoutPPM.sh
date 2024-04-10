@@ -47,7 +47,7 @@ R CMD BATCH $calculateRadius #> /dev/null
 awk '{printf "%s %s %6.2f\n", "REMARK",$1,$2}' radius.txt > out.pdb
 cat ./$pdbUserOriented >> out.pdb
 
-perl $orientForDisplay ./out.pdb > forDisplay.pdb
+python3 $orientForDisplay ./out.pdb > forDisplay.pdb
 
 resultsPath=$SOURCEDIR/results/
 echo "{\"resultsPath\" : \"$resultsPath\"}"
