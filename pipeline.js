@@ -301,6 +301,14 @@ var create_pymolScript = function (halfH, beltRadius, colorBelt = [0.3,0.3,0.3],
     return {"pymolScript.pml" : content};
 }
 
+const create_chimerax_script = function (half_height, inner_radius, belt_tickness) {
+    const script = `open file.pdb\n#file.pdb is the output of detbelt server\n\nshape cylinder radius ${inner_radius} height ${2*half_height} caps false slab 0,${belt_tickness} axis y\n\ntransparency #2 50`
+
+    return {'chimeraxScript.cxc' : script}
+    
+
+}
+
 
 /*
 * Create the content of the PDB file and return a JSON containing its name and its @content
@@ -404,7 +412,18 @@ var download = function (mode, newData, oldData) {
             var path = func();
             emitter.emit('pymolAvailable', path);
         });
-    } else if (mode === 'pdbFile') {
+    } else if (mode === "chimeraScript") {
+        async(function () {
+            const dict = create_chimerax_script(newData.halfH, newData.proteinRadius, newData.beltRadius - newData.proteinRadius)
+            return create_zip(dict)
+        }).on('end', function(func) {
+            var path = func();
+            emitter.emit('chimeraAvailable', path);
+        });
+    } 
+    
+    
+    else if (mode === 'pdbFile') {
         if (! oldData) console.log('ERROR in download() method : no oldData specified');
         async(function () {
             var dict = create_pdb(oldData.fileContent, newData.beltRadius);
@@ -427,7 +446,9 @@ var download = function (mode, newData, oldData) {
             var dict_pymol = create_pymolScript(newData.halfH, newData.beltRadius, newData.colorBelt, newData.lowerError, newData.upperError);
             var dict_pdb = create_pdb(oldData.fileContent, newData.beltRadius);
             var dict_data = create_dataFile(newData.halfH, newData.beltRadius, newData.proteinRadius, newData.ahs, newData.volumeCorona);
-            var dict = concatJson([dict_pymol, dict_pdb, dict_data]);
+            var dict_chimera = create_chimerax_script(newData.halfH, newData.proteinRadius, newData.beltRadius - newData.proteinRadius)
+            var dict = concatJson([dict_pymol, dict_pdb, dict_data, dict_chimera]);
+            
             return create_zip(dict);
         }).on('end', function(func) {
             var path = func();

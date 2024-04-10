@@ -42,6 +42,7 @@ downloadBox.prototype.display = function() {
                 +'<div class="buttonDownloadDiv btn-group">'
                 +'<div class="btn btn-primary btnLink btnPdb" style="height: 3em;padding-top: 0.7em;"> <img width="45px" src="img/pdb_alt.png"></div>'
                 +'<div class="btn btn-primary btnLink btnScript" style="height: 3em;padding-top: 0.7em;">PyMOL</div>'
+                +'<div class="btn btn-primary btnLink btnScriptCh" style="height: 3em;padding-top: 0.7em;">ChimeraX</div>'
                 +'<div class="btn btn-primary btnLink btnData" style="width: 5.5em;"> <i class="fa fa-2x fa-file-o"></i></div>'
                 +'<div class="btn btn-primary btnLink btnZip" style="width: 5.5em;"> <i class="fa fa-2x fa-folder-open-o"></i></div>'
 
@@ -71,6 +72,12 @@ downloadBox.prototype.display = function() {
         $(this).attr("disabled",true);
         self.emiter.emit("clickDL","downloadPymol");
     });
+
+    $(this.getNode()).find(".btnScriptCh").click(function(){
+        //   console.log("clic sur btnScript");
+           $(this).attr("disabled",true);
+           self.emiter.emit("clickDL","downloadChimera");
+       });
 
     $(this.getNode()).find(".btnData").click(function(){
     //    console.log("clic sur btnData");

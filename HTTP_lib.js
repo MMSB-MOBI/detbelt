@@ -1,12 +1,20 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+const express = require('express')
+const app = express();
+const https = require('https');
+const http = require('http')
+
 var {spawn} = require('child_process');
 var events = require ('events');
-var fs = require('fs');
+const fs = require('fs');
 var bodyParser = require('body-parser');
 
+cert_file = "/certs/detbelt-dev_ibcp_fr_full.pem"
+cert_key = "/certs/detbelt-dev_ibcp_fr.key"
+const server = https.createServer({
+    key: fs.readFileSync(cert_key),
+    cert: fs.readFileSync(cert_file),
+  }, app);
+const io = require('socket.io')(server);
 
 //var port = 3001;
 
@@ -163,6 +171,7 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
     })
 
     // listening the server
+    
     server.listen(port, function () {
         console.log('Server listening on port ' + port + ' !');
     });
@@ -186,6 +195,12 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
         .on("downloadPymol", function (newData) {
             var mode = "pymolScript";
             downloader(mode, newData).on('pymolAvailable', function (pathFile) {
+                socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});
+            });
+        })
+        .on("downloadChimera", function (newData) {
+            var mode = "chimeraScript";
+            downloader(mode, newData).on('chimeraAvailable', function (pathFile) {
                 socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});
             });
         })
