@@ -1,4 +1,4 @@
-const THREE = require('three/build/three.module.js');
+const THREE = require('three');
 //import * as THREE from 'three/build/three.module.js';
 
 /**
