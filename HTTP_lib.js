@@ -189,6 +189,12 @@ var httpStart = function (worker, downloader, downloadRoute, port, dbEndpoints) 
                 socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});
             });
         })
+        .on("downloadChimera", function (newData) {
+            var mode = "chimeraScript";
+            downloader(mode, newData).on('chimeraAvailable', function (pathFile) {
+                socket.emit('fileAvailable', {"mode" : mode, "path" : pathFile});
+            });
+        })
         .on("downloadPdb", function (newData) {
             console.log("on download pdb")
             var mode = 'pdbFile';
